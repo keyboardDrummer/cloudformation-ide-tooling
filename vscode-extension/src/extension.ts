@@ -1,8 +1,9 @@
 'use strict';
 
-import { workspace, ExtensionContext, window, Disposable } from 'vscode';
+import { commands, workspace, ExtensionContext, window, Disposable } from 'vscode';
 import { Executable, LanguageClient, LanguageClientOptions, ServerOptions, ExecutableOptions } from 'vscode-languageclient';
 import * as path from 'path'
+import * as requirements from './requirements';
 
 interface LanguageConfiguration {
 	vscodeName: string,
@@ -19,14 +20,25 @@ const languages: Array<LanguageConfiguration> = [
     }
 ]
 export function activate(context: ExtensionContext) {	
-	workspace.onDidChangeConfiguration(() => activateJar(context));
-	activateJar(context);
+	return requirements.resolveRequirements().catch(error => {
+		// show error
+		window.showErrorMessage(error.message, error.label).then((selection) => {
+			if (error.label && error.label === selection && error.command) {
+				commands.executeCommand(error.command, error.commandParam);
+			}
+		});
+		// rethrow to disrupt the chain.
+		throw error;
+	}).then(requirements => {
+		workspace.onDidChangeConfiguration(() => activateJar(requirements, context));
+		activateJar(requirements, context);
+	})
 }
 
 let previousJar: string | null | undefined = undefined;
-function activateJar(context: ExtensionContext) {
-	const javaHome = workspace.getConfiguration('java').get<string>('home');
-	const javaExecutable: string = javaHome ? path.resolve(javaHome, "/bin/java") : "java";
+function activateJar(requirements: requirements.RequirementsData, context: ExtensionContext) {
+	const javaHome = requirements.java_home;
+	const javaExecutable: string = path.join(javaHome, "/bin/java");
 
 	const jar: string = workspace.getConfiguration('miksilo').get("jar") || process.env.MIKSILO || "./MiksiloPlayground.jar";
 	if (jar === previousJar)
@@ -48,9 +60,9 @@ function activateJar(context: ExtensionContext) {
 	}
 }
 
-function activateLanguage(jar: string, javaHome: string, language: LanguageConfiguration): Disposable {
+function activateLanguage(jar: string, javaExecutable: string, language: LanguageConfiguration): Disposable {
 
-	let serverOptions: ServerOptions = prepareExecutable(jar, language,javaHome)
+	let serverOptions: ServerOptions = prepareExecutable(jar, language,javaExecutable)
 	
 	let clientOptions: LanguageClientOptions = {
 		documentSelector: [{scheme: 'file', language: language.vscodeName}],

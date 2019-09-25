@@ -88,15 +88,18 @@
 		"postinstall": "node ./node_modules/vscode/bin/install",
 		"create-assembly": "cd Miksilo && sbt assembly",
 		"move-assembly": "npm run create-assembly &&",
-		"try": "npm run compile && code --extensionDevelopmentPath=./"
+		"try": "npm run compile && code --extensionDevelopmentPath=$PWD"
 	},
 	"dependencies": {
-		"vscode-languageclient": "^5.2.1"
+		"vscode-languageclient": "^5.2.1",
+		"path-exists": "^3.0.0",
+		"expand-home-dir": "^0.0.3",
+		"find-java-home": "1.0.0"
 	},
 	"devDependencies": {
-		"vscode": "1.1.35",
 		"@types/mocha": "^2.2.48",
-		"@types/node": "^6.0.101",
-		"typescript": "^2.7.2"
+		"@types/node": "^6.14.7",
+		"typescript": "^2.7.2",
+		"vscode": "1.1.35"
 	}
 }
