@@ -1,0 +1,102 @@
+{
+	"name": "vscode-cloudformation",
+	"description": "A Visual Studio Code extension that adds full language support for AWS CloudFormation Templates",
+	"publisher": "keyboardDrummer",
+	"license": "MIT",
+	"version": "0.0.1",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/keyboardDrummer/vscode-cloudformation"
+	},
+	"engines": {
+		"vscode": "^1.30.x"
+	},
+	"categories": [
+		"Programming Languages"
+	],
+	"activationEvents": [
+		"onLanguage:cloudFormation",
+		"onLanguage:yamlCloudFormation"
+	],
+	"main": "./out/extension",
+	"contributes": {
+		"languages": [
+			{
+				"id": "cloudFormation",
+				"aliases": [
+					"cloudFormation"
+				],
+				"extensions": [
+					".cf.json"
+				]
+			},
+			{
+				"id": "yamlCloudFormation",
+				"aliases": [
+					"yamlCloudFormation"
+				],
+				"extensions": [
+					".cf.yaml"
+				]
+			}
+		],
+		"grammars": [
+			{
+				"language": "yamlCloudFormation",
+				"scopeName": "source.yaml",
+				"path": "./src/cloudFormation/yaml.tmLanguage.json"
+			},
+			{
+				"language": "cloudFormation",
+				"scopeName": "source.cloudFormation",
+				"path": "./src/cloudFormation/tmLanguage.json"
+			}
+		],
+		"configuration": {
+			"type": "object",
+			"title": "CloudFormation",
+			"properties": {
+				"miksilo.trace.server": {
+					"scope": "window",
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "off",
+					"description": "Traces the communication between VSCode and the language server."
+				},
+				"miksilo.jar": {
+					"scope": "application",
+					"type": "string",
+					"description": "Configures the location of the .jar file for Miksilo."
+				},
+				"java.home": {
+					"scope": "machine",
+					"type": "string",
+					"description": "Configures the location of the java home."
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -w -p ./",
+		"update-vscode": "node ./node_modules/vscode/bin/install",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"create-assembly": "cd Miksilo && sbt assembly",
+		"move-assembly": "npm run create-assembly &&",
+		"try": "npm run compile && code --extensionDevelopmentPath=./"
+	},
+	"dependencies": {
+		"vscode-languageclient": "^5.2.1"
+	},
+	"devDependencies": {
+		"vscode": "1.1.35",
+		"@types/mocha": "^2.2.48",
+		"@types/node": "^6.0.101",
+		"typescript": "^2.7.2"
+	}
+}
