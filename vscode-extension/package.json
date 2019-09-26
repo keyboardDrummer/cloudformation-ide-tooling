@@ -1,13 +1,15 @@
 {
 	"name": "vscode-cloudformation",
-	"description": "A Visual Studio Code extension that adds full language support for AWS CloudFormation Templates",
+	"displayName": "Language Support for AWS CloudFormation Templates",
+	"description": "Rich language support for AWS CloudFormation Templates",
 	"publisher": "keyboardDrummer",
 	"license": "MIT",
-	"version": "0.0.1",
+	"version": "0.0.4",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/keyboardDrummer/vscode-cloudformation"
 	},
+	"icon": "aws-cloudformation-icon.png",
 	"engines": {
 		"vscode": "^1.30.x"
 	},
