@@ -4,7 +4,7 @@
 	"description": "Rich language support for AWS CloudFormation Templates",
 	"publisher": "keyboardDrummer",
 	"license": "MIT",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/keyboardDrummer/vscode-cloudformation"
@@ -83,14 +83,14 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
+		"vscode:prepublish": "npm run compile && cp ../Miksilo/languageServer/target/scala-2.12/MiksiloLspServer.jar ./out",
 		"compile": "tsc -p ./",
 		"watch": "tsc -w -p ./",
 		"update-vscode": "node ./node_modules/vscode/bin/install",
 		"postinstall": "node ./node_modules/vscode/bin/install",
 		"create-assembly": "cd Miksilo && sbt assembly",
 		"move-assembly": "npm run create-assembly &&",
-		"try": "npm run compile && code --extensionDevelopmentPath=$PWD"
+		"try": "npm run vscode:prepublish && code --extensionDevelopmentPath=$PWD"
 	},
 	"dependencies": {
 		"expand-home-dir": "^0.0.3",

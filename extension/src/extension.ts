@@ -40,7 +40,7 @@ function activateJar(requirements: requirements.RequirementsData, context: Exten
 	const javaHome = requirements.java_home;
 	const javaExecutable: string = path.join(javaHome, "/bin/java");
 
-	const jar: string = workspace.getConfiguration('miksilo').get("jar") || process.env.MIKSILO || "./MiksiloPlayground.jar";
+	const jar: string = workspace.getConfiguration('miksilo').get("jar") || `${__dirname}/MiksiloLspServer.jar`;
 	if (jar === previousJar)
 		return;
 	previousJar = jar;
