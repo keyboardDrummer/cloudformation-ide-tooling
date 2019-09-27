@@ -1,1 +1,1 @@
-vscode-extension/README.md
+extension/README.md
