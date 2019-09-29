@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.0.7
+
+- Show code completion while typing, without requiring it to be invoked using ctrl+space
+
 ## 0.0.6
 
 - Fixed a bug in the YAML parser that made it fail on compact block arrays, such as:
