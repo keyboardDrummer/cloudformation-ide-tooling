@@ -90,7 +90,7 @@ function prepareExecutable(jar: string, language: LanguageConfiguration,
 	executable.command = javaExecutable;
 
 	language.miksiloName = language.miksiloName || language.vscodeName;
-	executable.args = ["-jar", jar, language.miksiloName]
+	executable.args = ["-jar", jar, language.miksiloName, __dirname + "/../CloudFormationResourceSpecification.json"]
 	//"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=localhost:1044",
 	//"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=6007",
 	return executable;

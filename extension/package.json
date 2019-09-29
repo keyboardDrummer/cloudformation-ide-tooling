@@ -4,7 +4,7 @@
 	"description": "Rich language support for AWS CloudFormation Templates",
 	"publisher": "keyboardDrummer",
 	"license": "MIT",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/keyboardDrummer/vscode-cloudformation"
@@ -30,7 +30,8 @@
 				],
 				"extensions": [
 					".cf.json"
-				]
+				],
+				"configuration": "./src/cloudFormation/json-language-configuration.json"
 			},
 			{
 				"id": "yamlCloudFormation",
