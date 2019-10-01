@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.0.8
+
+- (again) Show code completion while typing, without requiring it to be invoked using ctrl+space
+
 ## 0.0.7
 
 - Show code completion while typing, without requiring it to be invoked using ctrl+space
