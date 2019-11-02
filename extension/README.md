@@ -8,11 +8,13 @@ This extention adds rich language support for AWS CloudFormation Templates to Vi
 
 ## Language features
 
-- Autocompletion of symbols as you type
-- Go to or Peek Definition of symbols
-- Find References of symbols
-- Go to symbol in file or see the file outline
-- Symbol Rename
+![Features demo](images/demo.gif)
+
+- Auto-completion
+- Go to Definition
+- Find References
+- Smart rename
+- File outline
 - Inline errors
 
 These features work even when there are syntactic or semantic errors in your file.

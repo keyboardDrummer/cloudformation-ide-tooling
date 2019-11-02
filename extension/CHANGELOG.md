@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.0.12
+- Improve parse speed for files with parse errors
+- Add more telemetry
+- Add a demo of features to the extension page
+
 ## 0.0.11
 - Add basic telemetry if the user has enabled telemetry for VS Code
 
