@@ -3,7 +3,9 @@
 import { commands, workspace, ExtensionContext, window, Disposable } from 'vscode';
 import { Executable, LanguageClient, LanguageClientOptions, ServerOptions, ExecutableOptions } from 'vscode-languageclient';
 import * as path from 'path'
+import * as fs from 'fs'
 import * as requirements from './requirements';
+import TelemetryReporter from 'vscode-extension-telemetry';
 
 interface LanguageConfiguration {
 	vscodeName: string,
@@ -19,7 +21,10 @@ const languages: Array<LanguageConfiguration> = [
          miksiloName: "yamlCloudFormation"
     }
 ]
-export function activate(context: ExtensionContext) {	
+let reporter: TelemetryReporter;
+
+export function activate(context: ExtensionContext) {
+
 	return requirements.resolveRequirements().catch(error => {
 		// show error
 		window.showErrorMessage(error.message, error.label).then((selection) => {
@@ -40,7 +45,7 @@ function activateJar(requirements: requirements.RequirementsData, context: Exten
 	const javaHome = requirements.java_home;
 	const javaExecutable: string = path.join(javaHome, "/bin/java");
 
-	const jar: string = workspace.getConfiguration('miksilo').get("jar") || `${__dirname}/MiksiloLspServer.jar`;
+	const jar: string = workspace.getConfiguration('miksilo').get("jar") || `${__dirname}/modularLanguages.jar`;
 	if (jar === previousJar)
 		return;
 	previousJar = jar;
@@ -53,6 +58,23 @@ function activateJar(requirements: requirements.RequirementsData, context: Exten
 		previousClient.dispose()
 	}
 	context.subscriptions.length = 0;
+	
+    const extensionPath = path.join(context.extensionPath, "package.json");
+    const packageFile = JSON.parse(fs.readFileSync(extensionPath, 'utf8'));
+
+	let version = "unknown"
+	let extensionId = "unknown"
+    if (packageFile) {
+		version = packageFile.version;
+		extensionId = packageFile.name
+	}
+
+	// create telemetry reporter on extension activation
+	reporter = new TelemetryReporter(extensionId, version, "4f5e6451-3d46-49f6-a295-ade5e6d47d47");
+	reporter.sendTelemetryEvent("activate")
+
+	// ensure it gets property disposed
+	context.subscriptions.push(reporter);
 
 	for(const language of languages) {
 		const disposable = activateLanguage(jar, javaExecutable, language);
@@ -71,13 +93,33 @@ function activateLanguage(jar: string, javaExecutable: string, language: Languag
 		}
 	}
 	
+	const start = Date.now()
 	const languageClient = new LanguageClient(
 		'miksilo' + language.vscodeName, 
 		language.vscodeName + " Miksilo", 
 		serverOptions, clientOptions);
-		
+
+	const info = (message: String) => {
+		languageClient.outputChannel.appendLine(`[INFO] ${message}`);
+	}
+	languageClient.onReady().then(_ => {
+		const connectionTime = Date.now() - start;
+		info(`Connection time was ${connectionTime}`);
+		reporter.sendTelemetryEvent("ready", undefined, { connectionTime })
+	})
+	languageClient.onTelemetry((data: any) => {
+		const {name, value} = data
+		const measurements = {}
+		measurements[name] = value
+		info(`${name} was ${value}`);
+		reporter.sendTelemetryEvent("lspServerMetric", undefined, measurements)
+	})
+
+	info("Using Miksilo jar " + jar);
 	return languageClient.start();
+
 }
+
 
 function prepareExecutable(jar: string, language: LanguageConfiguration, 
 	javaExecutable: string): Executable {
@@ -94,4 +136,10 @@ function prepareExecutable(jar: string, language: LanguageConfiguration,
 	//"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=localhost:1044",
 	//"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=6007",
 	return executable;
+}
+
+export function deactivate() {
+	if (reporter) {
+		reporter.dispose();
+	}
 }

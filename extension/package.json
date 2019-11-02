@@ -4,7 +4,7 @@
 	"description": "Rich language support for AWS CloudFormation Templates",
 	"publisher": "keyboardDrummer",
 	"license": "MIT",
-	"version": "0.0.8",
+	"version": "0.0.11",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/keyboardDrummer/vscode-cloudformation"
@@ -57,16 +57,16 @@
 			}
 		],
 		"configurationDefaults": {
-		  "[cloudFormation]": {
-			"editor.quickSuggestions": {
-				"strings": true
+			"[cloudFormation]": {
+				"editor.quickSuggestions": {
+					"strings": true
+				}
+			},
+			"[yamlCloudFormation]": {
+				"editor.quickSuggestions": {
+					"strings": true
+				}
 			}
-		  },
-		  "[yamlCloudFormation]": {
-			"editor.quickSuggestions": {
-				"strings": true
-			}
-		  }
 		},
 		"configuration": {
 			"type": "object",
@@ -97,7 +97,7 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile && cp ../Miksilo/languageServer/target/scala-2.12/MiksiloLspServer.jar ./out",
+		"vscode:prepublish": "npm run compile && cp ../Miksilo/modularLanguages/target/scala-2.12/modularLanguages.jar ./out",
 		"compile": "tsc -p ./",
 		"watch": "tsc -w -p ./",
 		"update-vscode": "node ./node_modules/vscode/bin/install",
@@ -107,6 +107,7 @@
 		"try": "npm run vscode:prepublish && code --extensionDevelopmentPath=$PWD"
 	},
 	"dependencies": {
+		"vscode-extension-telemetry": "0.1.2",
 		"expand-home-dir": "^0.0.3",
 		"find-java-home": "1.0.0",
 		"path-exists": "^3.0.0",
