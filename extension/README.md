@@ -8,7 +8,7 @@ This extention adds rich language support for AWS CloudFormation Templates to Vi
 
 ## Language features
 
-![Features demo](images/demo.gif)
+![Features demo](https://github.com/keyboardDrummer/vscode-cloudformation/raw/master/extension/images/demo.gif)
 
 - Auto-completion
 - Go to Definition
