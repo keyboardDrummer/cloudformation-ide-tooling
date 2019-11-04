@@ -105,14 +105,14 @@ function activateLanguage(jar: string, javaExecutable: string, language: Languag
 	languageClient.onReady().then(_ => {
 		const connectionTime = Date.now() - start;
 		info(`Connection time was ${connectionTime}`);
-		reporter.sendTelemetryEvent("ready", undefined, { connectionTime })
+		reporter.sendTelemetryEvent(language.vscodeName + "_ready", undefined, { connectionTime })
 	})
 	languageClient.onTelemetry((data: any) => {
 		const {name, value} = data
 		const measurements = {}
 		measurements[name] = value
 		info(`${name} was ${value}`);
-		reporter.sendTelemetryEvent("lspServerMetric", undefined, measurements)
+		reporter.sendTelemetryEvent(language.vscodeName + "_lspServer", undefined, measurements)
 	})
 
 	info("Using Miksilo jar " + jar);
