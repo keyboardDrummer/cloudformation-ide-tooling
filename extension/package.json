@@ -9,7 +9,7 @@
 		"type": "git",
 		"url": "https://github.com/keyboardDrummer/vscode-cloudformation"
 	},
-	"icon": "aws-cloudformation-icon.png",
+	"icon": "images/aws-cloudformation-icon.png",
 	"engines": {
 		"vscode": "^1.30.x"
 	},
