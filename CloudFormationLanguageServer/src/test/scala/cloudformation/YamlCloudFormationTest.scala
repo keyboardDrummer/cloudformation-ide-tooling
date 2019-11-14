@@ -1,4 +1,4 @@
-package deltas.cloudformation
+package cloudformation
 
 import _root_.lsp.{FileRange, HumanPosition, SymbolInformation, WorkspaceEdit}
 import core.SourceUtils

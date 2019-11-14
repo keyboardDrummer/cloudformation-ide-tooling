@@ -1,8 +1,9 @@
-package deltas.cloudformation
+package cloudformation
 
 import core.SourceUtils
 import core.bigrammar.TestLanguageGrammarUtils
 import core.parsers.editorParsers.{Position, SourceRange, UntilBestAndXStepsStopFunction}
+import deltas.cloudformation.CloudFormationLanguage
 import languageServer.{LanguageServerTest, MiksiloLanguageServer}
 import lsp._
 import lsp.HumanPosition
