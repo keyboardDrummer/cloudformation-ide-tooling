@@ -45,7 +45,8 @@ function activateJar(requirements: requirements.RequirementsData, context: Exten
 	const javaHome = requirements.java_home;
 	const javaExecutable: string = path.join(javaHome, "/bin/java");
 
-	const jar: string = workspace.getConfiguration('miksilo').get("jar") || `${__dirname}/modularLanguages.jar`;
+	const jar: string = process.env.MIKSILO ||
+	    workspace.getConfiguration('miksilo').get("jar") || `${__dirname}/CloudFormationLanguageServer.jar`;
 	if (jar === previousJar)
 		return;
 	previousJar = jar;

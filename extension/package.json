@@ -97,7 +97,7 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile && cp ../Miksilo/modularLanguages/target/scala-2.12/modularLanguages.jar ./out",
+		"vscode:prepublish": "npm run compile && cp ../CloudFormationLanguageServer/target/scala-2.12/CloudFormationLanguageServer.jar ./out",
 		"compile": "tsc -p ./",
 		"watch": "tsc -w -p ./",
 		"update-vscode": "node ./node_modules/vscode/bin/install",

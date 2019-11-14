@@ -8,7 +8,8 @@ lazy val miksilo = project
     editorParser,
     LSPProtocol,
     languageServer,
-    modularLanguages
+    modularLanguages,
+    cloudFormationLanguage
   )
 
 lazy val commonSettings = Seq(
@@ -80,16 +81,6 @@ lazy val modularLanguages = (project in file("Miksilo/modularLanguages")).
     name := "modularLanguages",
     assemblySettings,
     mainClass in Compile := Some("deltas.Program"),
-    vscode := {
-      val assemblyFile: String = assembly.value.getAbsolutePath
-      val extensionDirectory: File = file("./vscode-extension").getAbsoluteFile
-      val tsc = Process("tsc", file("./vscode-extension"))
-      val vscode = Process(Seq("code", s"--extensionDevelopmentPath=$extensionDirectory"),
-        None,
-        "MIKSILO" -> assemblyFile)
-
-      tsc.#&&(vscode).run
-    },
 
     // byteCode parser
     libraryDependencies += "org.scala-lang.modules" % "scala-parser-combinators_2.12" % "1.0.6",
@@ -97,9 +88,27 @@ lazy val modularLanguages = (project in file("Miksilo/modularLanguages")).
     //import com.google.common.primitives.{Ints, Longs}
     libraryDependencies += "com.google.guava" % "guava" % "18.0",
 
+  ).dependsOn(languageServer)
+
+lazy val cloudFormationLanguage = (project in file("CloudFormationLanguageServer")).
+  settings(commonSettings: _*).
+  settings(
+    name := "CloudFormationLanguageServer",
+    assemblySettings,
+    mainClass in Compile := Some("cloudformation.Program"),
+    vscode := {
+      val tsc = Process("tsc", file("./extension"))
+      val assemblyFile: String = assembly.value.getAbsolutePath
+      val extensionDirectory: File = file("./extension").getAbsoluteFile
+      val vscode = Process(Seq("code", s"--extensionDevelopmentPath=$extensionDirectory"),
+        None,
+        "MIKSILO" -> assemblyFile)
+
+      tsc.#&&(vscode).run
+    },
+
     // https://mvnrepository.com/artifact/com.typesafe.play/play-json
     libraryDependencies += "com.typesafe.play" %% "play-json" % "2.6.9",
-
-  ).dependsOn(languageServer)
+  ).dependsOn(modularLanguages, languageServer)
 
 lazy val vscode = taskKey[Unit]("Run VS Code with Miksilo")
