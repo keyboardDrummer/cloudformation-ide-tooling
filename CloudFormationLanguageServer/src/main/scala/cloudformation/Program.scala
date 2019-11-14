@@ -1,7 +1,6 @@
 package cloudformation
 
 import com.typesafe.scalalogging.LazyLogging
-import deltas.cloudformation.CloudFormationLanguage
 import languageServer.{LanguageServerMain, LanguageBuilder}
 import scala.reflect.io.File
 

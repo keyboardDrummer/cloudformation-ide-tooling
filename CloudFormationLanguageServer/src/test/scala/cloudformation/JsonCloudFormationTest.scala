@@ -3,7 +3,6 @@ package cloudformation
 import core.SourceUtils
 import core.bigrammar.TestLanguageGrammarUtils
 import core.parsers.editorParsers.{Position, SourceRange, UntilBestAndXStepsStopFunction}
-import deltas.cloudformation.CloudFormationLanguage
 import languageServer.{LanguageServerTest, MiksiloLanguageServer}
 import lsp._
 import lsp.HumanPosition
@@ -20,6 +19,36 @@ class JsonCloudFormationTest extends FunSuite with LanguageServerTest {
   val jsonLanguage = TestLanguageBuilder.buildWithParser(CloudFormationTest.language.jsonDeltas,
     UntilBestAndXStepsStopFunction(1))
   val jsonServer = new MiksiloLanguageServer(jsonLanguage)
+
+  test("resource without type") {
+    val program =
+      """{
+        |  "Resources": {
+        |    "DoesNotHaveAType": {
+        |      "Properties": {
+        |        "Foo": 3
+        |      }
+        |    },
+        |  }
+        |}
+        |""".stripMargin
+    val result = getDiagnostics(jsonServer, program)
+    assert(result.size == 0)
+  }
+
+  test("resource without properties") {
+    val program =
+      """{
+        |  "Resources": {
+        |    "DoesNotHaveProperties": {
+        |      "Type": "AWS::SNS::Topic"
+        |    },
+        |  }
+        |}
+        |""".stripMargin
+    val result = getDiagnostics(jsonServer, program)
+    assert(result.size == 0)
+  }
 
   test("No diagnostics") {
     val program = SourceUtils.getResourceFileContents("AutoScalingMultiAZWithNotifications.json")

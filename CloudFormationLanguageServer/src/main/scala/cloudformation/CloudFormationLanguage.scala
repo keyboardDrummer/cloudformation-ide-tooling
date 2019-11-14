@@ -1,4 +1,4 @@
-package deltas.cloudformation
+package cloudformation
 
 import java.io.InputStream
 

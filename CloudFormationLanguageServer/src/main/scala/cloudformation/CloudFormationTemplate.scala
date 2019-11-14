@@ -1,4 +1,4 @@
-package deltas.cloudformation
+package cloudformation
 
 import core.SolveConstraintsDelta
 import core.deltas.path.{NodePath, PathRoot}
@@ -59,19 +59,24 @@ class CloudFormationTemplate(resourceSpecificationOption: Option[InputStream]) e
 
       if (resource.value.shape == JsonObjectLiteralDelta.Shape) {
         val resourceMembers: ObjectLiteral[NodePath] = resource.value
-        val typeString = resourceMembers.getValue("Type")
-        val resourceType = JsonStringLiteralDelta.getValue(typeString)
-        val typeDeclaration = builder.resolve(resourceType, rootScope, typeString.getField(JsonStringLiteralDelta.Value))
-        val typeScope = builder.getDeclaredScope(typeDeclaration)
-        resourceMembers.get("Properties").foreach(_properties => {
-          if (_properties.shape == JsonObjectLiteralDelta.Shape) {
-            val properties: ObjectLiteral[NodePath] = _properties
-            for (property <- properties.members) {
-              if (property.key.nonEmpty)
-                builder.resolveToType(property.key, property.node.getField(MemberKey), typeScope, propertyType)
-            }
-          }
-        })
+        val typeOption = resourceMembers.get("Type")
+        typeOption match {
+          case Some(typeString) =>
+            val resourceType = JsonStringLiteralDelta.getValue(typeString)
+            val typeDeclaration = builder.resolve(resourceType, rootScope, typeString.getField(JsonStringLiteralDelta.Value))
+            val typeScope = builder.getDeclaredScope(typeDeclaration)
+            resourceMembers.get("Properties").foreach(_properties => {
+              if (_properties.shape == JsonObjectLiteralDelta.Shape) {
+                val properties: ObjectLiteral[NodePath] = _properties
+                for (property <- properties.members) {
+                  if (property.key.nonEmpty)
+                    builder.resolveToType(property.key, property.node.getField(MemberKey), typeScope, propertyType)
+                }
+              }
+            })
+          case None =>
+            // TODO add error for missing type.
+        }
       }
 
     }

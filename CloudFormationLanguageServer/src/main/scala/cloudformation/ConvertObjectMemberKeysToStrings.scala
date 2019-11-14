@@ -1,4 +1,4 @@
-package deltas.cloudformation
+package cloudformation
 
 import core.deltas.DeltaWithPhase
 import core.deltas.path.{NodeChildPath, PathRoot}
