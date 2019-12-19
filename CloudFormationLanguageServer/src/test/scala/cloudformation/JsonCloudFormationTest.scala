@@ -10,7 +10,7 @@ import org.scalatest.FunSuite
 import util.TestLanguageBuilder
 
 object CloudFormationTest {
-  val file = SourceUtils.getResourceFile("CloudFormationResourceSpecification.json")
+  val file = SourceUtils.getResourceFileContents("CloudFormationResourceSpecification.json")
   val language = new CloudFormationLanguage(Some(file))
 }
 

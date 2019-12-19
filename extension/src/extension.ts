@@ -1,10 +1,9 @@
 'use strict';
 
-import { commands, workspace, ExtensionContext, window, Disposable } from 'vscode';
+import { workspace, ExtensionContext, window, Disposable } from 'vscode';
 import { Executable, LanguageClient, LanguageClientOptions, ServerOptions, ExecutableOptions } from 'vscode-languageclient';
 import * as path from 'path'
 import * as fs from 'fs'
-import * as requirements from './requirements';
 import TelemetryReporter from 'vscode-extension-telemetry';
 
 interface LanguageConfiguration {
@@ -25,25 +24,12 @@ let reporter: TelemetryReporter;
 
 export function activate(context: ExtensionContext) {
 
-	return requirements.resolveRequirements().catch(error => {
-		// show error
-		window.showErrorMessage(error.message, error.label).then((selection) => {
-			if (error.label && error.label === selection && error.command) {
-				commands.executeCommand(error.command, error.commandParam);
-			}
-		});
-		// rethrow to disrupt the chain.
-		throw error;
-	}).then(requirements => {
-		workspace.onDidChangeConfiguration(() => activateJar(requirements, context));
-		activateJar(requirements, context);
-	})
+	workspace.onDidChangeConfiguration(() => activateJar(context));
+	activateJar(context);
 }
 
 let previousJar: string | null | undefined = undefined;
-function activateJar(requirements: requirements.RequirementsData, context: ExtensionContext) {
-	const javaHome = requirements.java_home;
-	const javaExecutable: string = path.join(javaHome, "/bin/java");
+function activateJar(context: ExtensionContext) {
 
 	const jar: string = process.env.MIKSILO ||
 	    workspace.getConfiguration('miksilo').get("jar") || `${__dirname}/CloudFormationLanguageServer.jar`;
@@ -78,14 +64,14 @@ function activateJar(requirements: requirements.RequirementsData, context: Exten
 	context.subscriptions.push(reporter);
 
 	for(const language of languages) {
-		const disposable = activateLanguage(jar, javaExecutable, language);
+		const disposable = activateLanguage(jar, language);
 		context.subscriptions.push(disposable);
 	}
 }
 
-function activateLanguage(jar: string, javaExecutable: string, language: LanguageConfiguration): Disposable {
+function activateLanguage(jar: string, language: LanguageConfiguration): Disposable {
 
-	let serverOptions: ServerOptions = prepareExecutable(jar, language,javaExecutable)
+	let serverOptions: ServerOptions = prepareExecutable(jar, language)
 	
 	let clientOptions: LanguageClientOptions = {
 		documentSelector: [{scheme: 'file', language: language.vscodeName}],
@@ -122,18 +108,17 @@ function activateLanguage(jar: string, javaExecutable: string, language: Languag
 }
 
 
-function prepareExecutable(jar: string, language: LanguageConfiguration, 
-	javaExecutable: string): Executable {
+function prepareExecutable(jar: string, language: LanguageConfiguration): Executable {
 
 	const executable: Executable = Object.create(null);
 	const options: ExecutableOptions = Object.create(null);
 	options.env = process.env;
 	options.stdio = 'pipe';
 	executable.options = options;
-	executable.command = javaExecutable;
+	executable.command = "node";
 
 	language.miksiloName = language.miksiloName || language.vscodeName;
-	executable.args = ["-jar", jar, language.miksiloName, __dirname + "/../CloudFormationResourceSpecification.json"]
+	executable.args = [jar, language.miksiloName, __dirname + "/../CloudFormationResourceSpecification.json"]
 	//"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=localhost:1044",
 	//"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=6007",
 	return executable;

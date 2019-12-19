@@ -1,26 +1,24 @@
 package cloudformation
 
-import com.typesafe.scalalogging.LazyLogging
-import languageServer.{LanguageServerMain, LanguageBuilder}
-import scala.reflect.io.File
+import jsonRpc.{LambdaLogger, LazyLogging, MessageJsonRpcConnection}
+import languageServer.LanguageServerMain
 
-class CloudFormationLanguageBuilder(json: Boolean = true) extends LanguageBuilder with LazyLogging {
-  override def build(arguments: Seq[String]) = {
-    val resourceSpecificationOption = if (arguments.isEmpty) {
-      logger.debug("CloudFormation language requires passing a path to a resource specification as an argument")
-      None
-    } else {
-      val path = arguments.head
-      val inputStream = File(path).inputStream()
-      Some(inputStream)
-    }
-    val cloudFormation = new CloudFormationLanguage(resourceSpecificationOption)
-    if (json) cloudFormation.jsonLanguage else cloudFormation.yamlLanguage
+import scala.scalajs.js
+import scala.scalajs.js.Dynamic.{global => g}
+
+object Program extends LanguageServerMain(Array(
+
+  new CloudFormationLanguageBuilder(json = true),
+  new CloudFormationLanguageBuilder(json = false)),
+    new MessageJsonRpcConnection(
+      new NodeMessageReader(g.process.stdin),
+      new NodeMessageWriter(g.process.stdout))) {
+
+  override def main(args: Array[String]): Unit = {
+    LazyLogging.logger = new LambdaLogger(s => g.process.stderr.write(s))
+    val nodeArgs = g.process.argv.asInstanceOf[js.Array[String]].drop(2).toArray
+    super.main(nodeArgs)
   }
-
-  override def key = if (json) "cloudFormation" else "yamlCloudFormation"
 }
 
-object Program extends LanguageServerMain(Seq(
-  new CloudFormationLanguageBuilder(json = true),
-  new CloudFormationLanguageBuilder(json = false)))
+

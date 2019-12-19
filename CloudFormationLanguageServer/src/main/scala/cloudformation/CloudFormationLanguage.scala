@@ -9,7 +9,7 @@ import core.parsers.editorParsers.UntilTimeStopFunction
 import deltas.json.JsonLanguage
 import deltas.yaml.YamlLanguage
 
-class CloudFormationLanguage(resourceSpecificationOption: Option[InputStream]) {
+class CloudFormationLanguage(resourceSpecificationOption: Option[String]) {
   val cloudFormationTemplate = new CloudFormationTemplate(resourceSpecificationOption)
   val jsonDeltas: Seq[Delta] = Seq(cloudFormationTemplate) ++
     JsonLanguage.deltas ++ Seq(SolveConstraintsDelta)

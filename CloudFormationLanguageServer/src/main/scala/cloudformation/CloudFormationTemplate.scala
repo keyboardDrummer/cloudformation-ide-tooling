@@ -1,11 +1,8 @@
 package cloudformation
 
 import core.SolveConstraintsDelta
+import core.deltas.path.ConstraintBuilderExtension._
 import core.deltas.path.{NodePath, PathRoot}
-import java.io.InputStream
-
-import com.typesafe.scalalogging.LazyLogging
-import core.deltas.path.NodePath
 import core.deltas.{Contract, Delta}
 import core.language.Language
 import core.smarts.ConstraintBuilder
@@ -14,16 +11,14 @@ import core.smarts.types.objects.PrimitiveType
 import deltas.expression.StringLiteralDelta
 import deltas.json.JsonObjectLiteralDelta.{MemberKey, MemberShape, ObjectLiteral, ObjectLiteralMember}
 import deltas.json.{JsonObjectLiteralDelta, JsonStringLiteralDelta}
-import play.api.libs.json.{JsObject, Json}
-import util.{JavaSourceUtils, StreamUtils}
-import core.deltas.path.ConstraintBuilderExtension._
+import jsonRpc.LazyLogging
+import ujson.{Obj, Value}
 
-class CloudFormationTemplate(resourceSpecificationOption: Option[InputStream]) extends Delta with LazyLogging {
+class CloudFormationTemplate(resourceSpecificationOption: Option[String]) extends Delta with LazyLogging {
 
-  val resourceTypes = resourceSpecificationOption.fold(JsObject.empty)(resourceSpecification => {
-    val resourceTypeSpecification = StreamUtils.streamToString(resourceSpecification)
-    val parsedFile = Json.parse(resourceTypeSpecification).as[JsObject]
-    parsedFile.value("ResourceTypes").as[JsObject]
+  val resourceTypes = resourceSpecificationOption.fold(Obj.apply())(resourceSpecification => {
+    val parsedFile = upickle.default.read[Value](resourceSpecification).obj
+    parsedFile("ResourceTypes").asInstanceOf[Obj]
   })
 
   override def description: String = "Add cloudformation template semantics"
@@ -111,14 +106,14 @@ class CloudFormationTemplate(resourceSpecificationOption: Option[InputStream]) e
     }
   }
 
-  private def addResourceTypesFromSchema(resourceTypes: JsObject, builder: ConstraintBuilder, universe: ConcreteScope): Unit = {
+  private def addResourceTypesFromSchema(resourceTypes: Obj, builder: ConstraintBuilder, universe: ConcreteScope): Unit = {
     for (resourceType <- resourceTypes.value) {
       val typeDeclaration = builder.declare(resourceType._1, universe)
       val typeScope = builder.declareScope(typeDeclaration)
 
-      val typeObject = resourceType._2.as[JsObject]
-      val properties = typeObject.value("Properties").as[JsObject]
-      for (property <- properties.value) {
+      val typeObject = resourceType._2.obj
+      val properties = typeObject("Properties").obj
+      for (property <- properties) {
         builder.declare(property._1, typeScope, null, Some(propertyType))
       }
     }
