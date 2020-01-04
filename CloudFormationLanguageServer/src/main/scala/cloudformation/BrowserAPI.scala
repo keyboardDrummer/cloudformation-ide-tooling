@@ -1,7 +1,7 @@
 package cloudformation
 
 import core.language.Language
-import jsonRpc.{LambdaLogger, LazyLogging, MessageJsonRpcConnection}
+import jsonRpc.{LambdaLogger, LazyLogging, JsonRpcConnection}
 import languageServer.MiksiloLanguageServer
 import lsp.LSPServer
 
@@ -28,7 +28,7 @@ object BrowserAPI {
   }
 
   private def startServer(reader: JSMessageReader, writer: JSMessageWriter, language: Language): Unit = {
-    val connection = new MessageJsonRpcConnection(
+    val connection = new JsonRpcConnection(
       new FromJSMessageReader(reader), new FromJSMessageWriter(writer))
     val languageServer = new MiksiloLanguageServer(language)
     new LSPServer(languageServer, connection)

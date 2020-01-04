@@ -4,11 +4,11 @@ import _root_.lsp.{FileRange, HumanPosition, SymbolInformation, WorkspaceEdit}
 import core.SourceUtils
 import core.parsers.editorParsers.{Position, SourceRange, TextEdit, UntilBestAndXStepsStopFunction}
 import languageServer._
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import util.TestLanguageBuilder._
 import util.TestLanguageBuilder
 
-class YamlCloudFormationTest extends FunSuite with LanguageServerTest {
+class YamlCloudFormationTest extends AnyFunSuite with LanguageServerTest {
 
   val yamlLanguage = TestLanguageBuilder.buildWithParser(CloudFormationTest.language.yamlDeltas, UntilBestAndXStepsStopFunction(1))
   val yamlServer = new MiksiloLanguageServer(yamlLanguage)

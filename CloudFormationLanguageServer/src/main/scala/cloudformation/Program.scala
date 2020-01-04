@@ -1,16 +1,16 @@
 package cloudformation
 
-import jsonRpc.{LambdaLogger, LazyLogging, MessageJsonRpcConnection}
+import jsonRpc.{LambdaLogger, LazyLogging, JsonRpcConnection}
 import languageServer.LanguageServerMain
 
 import scala.scalajs.js
 import scala.scalajs.js.Dynamic.{global => g}
 
-object Program extends LanguageServerMain(Array(
+object Program extends LanguageServerMain(Seq(
 
   new CloudFormationLanguageBuilder(json = true),
   new CloudFormationLanguageBuilder(json = false)),
-    new MessageJsonRpcConnection(
+    new JsonRpcConnection(
       new NodeMessageReader(g.process.stdin),
       new NodeMessageWriter(g.process.stdout))) {
 

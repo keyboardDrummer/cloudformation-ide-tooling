@@ -8,7 +8,7 @@ class Lock {
 
   def notify2(): Unit = {
     if (promise != null) {
-      promise.success(Unit)
+      promise.success(())
       promise = null
     }
   }

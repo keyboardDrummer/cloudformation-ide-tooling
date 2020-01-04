@@ -6,7 +6,7 @@ import core.parsers.editorParsers.{Position, SourceRange, UntilBestAndXStepsStop
 import languageServer.{LanguageServerTest, MiksiloLanguageServer}
 import lsp._
 import lsp.HumanPosition
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import util.TestLanguageBuilder
 
 object CloudFormationTest {
@@ -14,7 +14,7 @@ object CloudFormationTest {
   val language = new CloudFormationLanguage(Some(file))
 }
 
-class JsonCloudFormationTest extends FunSuite with LanguageServerTest {
+class JsonCloudFormationTest extends AnyFunSuite with LanguageServerTest {
 
   val jsonLanguage = TestLanguageBuilder.buildWithParser(CloudFormationTest.language.jsonDeltas,
     UntilBestAndXStepsStopFunction(1))
