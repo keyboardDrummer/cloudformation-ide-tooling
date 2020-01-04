@@ -1,5 +1,6 @@
 package cloudformation
 
+import core.language.Language
 import jsonRpc.LazyLogging
 import languageServer.LanguageBuilder
 
@@ -14,7 +15,7 @@ object Fs extends js.Object {
 
 class CloudFormationLanguageBuilder(json: Boolean = true) extends LanguageBuilder with LazyLogging {
 
-  override def build(arguments: Seq[String]) = {
+  override def build(arguments: collection.Seq[String]): Language = {
     val resourceSpecificationOption = if (arguments.isEmpty) {
       logger.debug("CloudFormation language requires passing a path to a resource specification as an argument")
       None

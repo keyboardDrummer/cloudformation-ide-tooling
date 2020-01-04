@@ -1,6 +1,6 @@
 package cloudformation
 
-import jsonRpc.{LambdaLogger, LazyLogging, JsonRpcConnection}
+import jsonRpc.{JsonRpcConnection, LambdaLogger, LazyLogging, NodeMessageReader, NodeMessageWriter}
 import languageServer.LanguageServerMain
 
 import scala.scalajs.js

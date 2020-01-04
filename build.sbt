@@ -1,33 +1,35 @@
 import sbt.Keys.{homepage, scmInfo}
 
 import scala.sys.process._
+import sbt.Keys.{homepage, scmInfo}
+
+import scala.sys.process._
+import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 lazy val miksilo = project
   .in(file("."))
   .aggregate(
-    editorParser,
-    LSPProtocol,
-    languageServer,
+    editorParser.jvm,
+    LSPProtocol.jvm,
+    LSPProtocol.js,
+    languageServer.jvm,
     modularLanguages,
-    //cloudFormationLanguage,
     cloudFormationBrowserServer
-  ).enablePlugins(ScalaJSPlugin)
+  )
 
 lazy val commonSettings = Seq(
 
   version := "1.0",
   resolvers += "dhpcs at bintray" at "https://dl.bintray.com/dhpcs/maven",
-  resolvers += Resolver.sonatypeRepo("releases"),
   logLevel := Level.Info,
   logBuffered in Test := false,
-  scalaVersion := "2.12.4",
+  scalaVersion := "2.13.1",
   scalacOptions += "-deprecation",
   scalacOptions += "-feature",
   scalacOptions += "-language:implicitConversions",
   scalacOptions += "-language:postfixOps",
 
-  libraryDependencies += "org.scalatest" % "scalatest_2.12" % "3.0.4" % "test",
-
+  libraryDependencies += "org.scalatest" % "scalatest_2.13" % "3.1.0" % "test",
 )
 
 lazy val assemblySettings = Seq(
@@ -40,22 +42,30 @@ lazy val assemblySettings = Seq(
   }
 )
 
-lazy val editorParser = (project in file("Miksilo/editorParser")).
+lazy val editorParser = crossProject(JVMPlatform, JSPlatform).
+  crossType(CrossType.Full).
+  in(file("Miksilo/editorParser")).
   settings(commonSettings: _*).
-  settings(
+  jvmSettings(
 
+    // Only used for SourceUtils, should get rid of it.
     // https://mvnrepository.com/artifact/org.scala-lang/scala-reflect
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.12.4",
-  ).enablePlugins(ScalaJSPlugin)
+    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.13.1"
+  )
 
-lazy val LSPProtocol = (project in file("Miksilo/LSPProtocol")).
+lazy val LSPProtocol = crossProject(JVMPlatform, JSPlatform).
+  crossType(CrossType.Full).
+  in(file("Miksilo/LSPProtocol")).
   settings(commonSettings: _*).
   settings(
-    libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.7.4",
-    libraryDependencies += "io.github.shogowada" %%% "scala-json-rpc" % "0.9.3",
-  ).dependsOn(editorParser).enablePlugins(ScalaJSPlugin)
+    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.8.1",
+  ).
+  jsSettings(scalacOptions += "-P:scalajs:sjsDefinedByDefault").
+  dependsOn(editorParser)
 
-lazy val languageServer = (project in file("Miksilo/languageServer")).
+lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
+  crossType(CrossType.Pure).
+  in(file("Miksilo/languageServer")).
   settings(commonSettings: _*).
   settings(
     assemblySettings,
@@ -78,7 +88,7 @@ lazy val languageServer = (project in file("Miksilo/languageServer")).
         Opts.resolver.sonatypeStaging
     ),
 
-  ).dependsOn(editorParser % "compile->compile;test->test", LSPProtocol).enablePlugins(ScalaJSPlugin)
+  ).dependsOn(editorParser % "compile->compile;test->test", LSPProtocol)
 
 lazy val modularLanguages = (project in file("Miksilo/modularLanguages")).
   settings(commonSettings: _*).
@@ -86,49 +96,24 @@ lazy val modularLanguages = (project in file("Miksilo/modularLanguages")).
     name := "modularLanguages",
     assemblySettings,
     mainClass in Compile := Some("deltas.Program"),
+    vscode := {
+      val assemblyFile: String = assembly.value.getAbsolutePath
+      val extensionDirectory: File = file("./vscode-extension").getAbsoluteFile
+      val tsc = Process("tsc", file("./vscode-extension"))
+      val vscode = Process(Seq("code", s"--extensionDevelopmentPath=$extensionDirectory"),
+        None,
+        "MIKSILO" -> assemblyFile)
+
+      tsc.#&&(vscode).run
+    },
 
     // byteCode parser
-    libraryDependencies += "org.scala-lang.modules" % "scala-parser-combinators_2.12" % "1.0.6",
+    libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
 
-    //import com.google.common.primitives.{Ints, Longs}
-    libraryDependencies += "com.google.guava" % "guava" % "18.0",
+  ).dependsOn(languageServer.jvm,
+  editorParser.jvm % "compile->compile;test->test" /* for bigrammar testing utils*/ )
 
-  ).dependsOn(languageServer % "compile->compile;test->test").enablePlugins(ScalaJSPlugin)
-
-//lazy val cloudFormationLanguage = (project in file("CloudFormationLanguageServer")).
-//  settings(commonSettings: _*).
-//  enablePlugins(ScalaJSPlugin).
-//  settings(
-//    name := "CloudFormationLanguageServer",
-//    scalaJSUseMainModuleInitializer := true,
-//    scalaJSModuleKind := ModuleKind.CommonJSModule,
-//    mainClass in Compile := Some("cloudformation.Program"),
-//    vscode := {
-//      val tsc = Process("tsc", file("./extension"))
-//      val assemblyFile: String = "/Users/rwillems/Documents/GithubSources/vscode-cloudformation/CloudFormationLanguageServer/target/scala-2.12/cloudformationlanguageserver-opt.js" //fullOptJS.value.data.getAbsolutePath
-//      val extensionDirectory: File = file("./extension").getAbsoluteFile
-//      val vscode = Process(Seq("code", s"--extensionDevelopmentPath=$extensionDirectory"),
-//        None,
-//        "MIKSILO" -> assemblyFile)
-//
-//      tsc.#&&(vscode).run
-//    },
-//
-//    fastvscode := {
-//      val tsc = Process("tsc", file("./extension"))
-//      val assemblyFile: String = "/Users/rwillems/Documents/GithubSources/vscode-cloudformation/CloudFormationLanguageServer/target/scala-2.12/cloudformationlanguageserver-fastopt.js" //fullOptJS.value.data.getAbsolutePath
-//      val extensionDirectory: File = file("./extension").getAbsoluteFile
-//      val vscode = Process(Seq("code", s"--extensionDevelopmentPath=$extensionDirectory"),
-//        None,
-//        "MIKSILO" -> assemblyFile)
-//
-//      tsc.#&&(vscode).run
-//    },
-//
-//    // https://mvnrepository.com/artifact/com.typesafe.play/play-json
-//    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.8.0",
-//  ).dependsOn(modularLanguages, languageServer)
-
+lazy val vscode = taskKey[Unit]("Run VS Code with Miksilo")
 
 lazy val cloudFormationBrowserServer = (project in file("CloudFormationLanguageServer")).
   settings(commonSettings: _*).
@@ -139,7 +124,6 @@ lazy val cloudFormationBrowserServer = (project in file("CloudFormationLanguageS
     scalaJSModuleKind := ModuleKind.CommonJSModule,
     // https://mvnrepository.com/artifact/com.typesafe.play/play-json
     libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.8.0",
-  ).dependsOn(modularLanguages, languageServer)
+  ).dependsOn(LSPProtocol.js, modularLanguages, languageServer.js)
 
-lazy val vscode = taskKey[Unit]("Run VS Code with Miksilo")
 lazy val fastvscode = taskKey[Unit]("Run VS Code with Miksilo Fast")
