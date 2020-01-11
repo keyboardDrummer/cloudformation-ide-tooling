@@ -4,15 +4,6 @@ import core.language.Language
 import jsonRpc.LazyLogging
 import languageServer.LanguageBuilder
 
-import scala.scalajs.js
-import scala.scalajs.js.annotation.JSImport
-
-@js.native
-@JSImport("fs", JSImport.Namespace)
-object Fs extends js.Object {
-  def readFileSync(path: String, encoding: String): String = js.native
-}
-
 class CloudFormationLanguageBuilder(json: Boolean = true) extends LanguageBuilder with LazyLogging {
 
   override def build(arguments: collection.Seq[String]): Language = {
