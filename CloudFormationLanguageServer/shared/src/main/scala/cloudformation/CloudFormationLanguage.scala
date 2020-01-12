@@ -1,7 +1,5 @@
 package cloudformation
 
-import java.io.InputStream
-
 import core.SolveConstraintsDelta
 import core.deltas._
 import core.language.Language

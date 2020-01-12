@@ -1,8 +1,9 @@
 package cloudformation
 
-import jsonRpc.{JsonRpcConnection, LambdaLogger, LazyLogging, NodeMessageReader, NodeMessageWriter}
+import jsonRpc._
 import languageServer.LanguageServerMain
 
+import scala.concurrent.ExecutionContext
 import scala.scalajs.js
 import scala.scalajs.js.Dynamic.{global => g}
 

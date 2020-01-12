@@ -1,10 +1,11 @@
 package cloudformation
 
 import core.language.Language
-import jsonRpc.{FromJSMessageReader, FromJSMessageWriter, JSMessageReader, JSMessageWriter, JsonRpcConnection, LambdaLogger, LazyLogging}
+import jsonRpc._
 import languageServer.MiksiloLanguageServer
 import lsp.LSPServer
 
+import scala.concurrent.ExecutionContext
 import scala.scalajs.js.Dynamic.{global => g}
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
