@@ -32,7 +32,13 @@ object BrowserAPI {
     val connection = new JsonRpcConnection(
       new FromJSMessageReader(reader), new FromJSMessageWriter(writer))
     val languageServer = new MiksiloLanguageServer(language)
-    new LSPServer(languageServer, connection)
+    new LSPServer(languageServer, connection
+      //      , new ExecutionContext {
+      //      override def execute(runnable: Runnable): Unit = g.setTimeout(() => runnable.run(), 1)
+      //
+      //      override def reportFailure(cause: Throwable): Unit = ???
+      //    }
+    )
     connection.listen()
   }
 }

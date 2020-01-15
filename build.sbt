@@ -133,3 +133,35 @@ lazy val cloudFormationBrowserServer = crossProject(JVMPlatform, JSPlatform).
   ).dependsOn(LSPProtocol, modularLanguages % "compile->compile;test->test", languageServer)
 
 lazy val fastvscode = taskKey[Unit]("Run VS Code with Miksilo Fast")
+
+lazy val cloudFormationBrowser = project.
+  in(file("CloudFormationBrowserServer")).
+  enablePlugins(ScalaJSPlugin).
+  settings(commonSettings: _*).
+  settings(
+    fastbrowser := {
+      val assemblyFile: String = (fastOptJS in Compile).value.data.getAbsolutePath
+      val copy = Process(Seq("cp", assemblyFile, "./cloudFormationBrowserExample/localDependency/server.js"))
+      val yarn = Process(Seq("yarn", "install"), file("./cloudFormationBrowserExample"))
+
+      copy.#&&(yarn).run
+    },
+
+    fullbrowser := {
+      val assemblyFile: String = (fullOptJS in Compile).value.data.getAbsolutePath
+      val copy = Process(Seq("cp", assemblyFile, "./cloudFormationBrowserExample/localDependency/server.js"))
+      val yarn = Process(Seq("yarn", "install"), file("./cloudFormationBrowserExample"))
+
+      copy.#&&(yarn).run
+    }).
+  settings(
+    name := "CloudFormationBrowser",
+
+    scalaJSUseMainModuleInitializer := false,
+    scalaJSModuleKind := ModuleKind.CommonJSModule,
+    // https://mvnrepository.com/artifact/com.typesafe.play/play-json
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.8.0",
+  ).dependsOn(cloudFormationBrowserServer.js)
+
+lazy val fastbrowser = taskKey[Unit]("Run Browser with Miksilo Fast")
+lazy val fullbrowser = taskKey[Unit]("Run Browser with Miksilo Fast")
