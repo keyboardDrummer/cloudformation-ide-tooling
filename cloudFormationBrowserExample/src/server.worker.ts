@@ -46,4 +46,9 @@ class ServerMessageReader {
 const serverWriter = new ServerMessageWriter()
 const serverReader = new ServerMessageReader();
 onmessage = (e) => serverReader.addPayload(e.data)
-BrowserAPI.jsonServer(serverReader, serverWriter)
+
+fetch("CloudFormationResourceSpecification.json").then(async response => {
+    const blob = await response.text()
+    console.log("fetched resource specification, blob length is " + blob.length);
+    BrowserAPI.jsonServer(serverReader, serverWriter, blob)
+})
