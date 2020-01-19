@@ -15,6 +15,9 @@ import {
 import * as monaco from "monaco-editor";
 import { createLanguageClient } from "./languageClient"
 
+// Prevent Monaco from trying to use its built-in JSON language server
+monaco.languages.json.jsonDefaults.setModeConfiguration({tokens: true})
+
 // register Monaco languages
 monaco.languages.register({
     id: 'json',
