@@ -142,7 +142,7 @@ lazy val cloudFormationBrowser = project.
     fastbrowser := {
       val assemblyFile: String = (fastOptJS in Compile).value.data.getAbsolutePath
       val copy = Process(Seq("cp", assemblyFile, "./cloudFormationBrowserExample/localDependency/server.js"))
-      val yarn = Process(Seq("yarn", "install"), file("./cloudFormationBrowserExample"))
+      val yarn = Process(Seq("yarn", "dev"), file("./cloudFormationBrowserExample"))
 
       copy.#&&(yarn).run
     },

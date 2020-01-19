@@ -43,12 +43,15 @@ class ServerMessageReader {
 }
 
 
-const serverWriter = new ServerMessageWriter()
-const serverReader = new ServerMessageReader();
-onmessage = (e) => serverReader.addPayload(e.data)
+onmessage = (e) => {
+    const serverConstructor = e.data === "json" ? BrowserAPI.jsonServer.bind(BrowserAPI) : BrowserAPI.yamlServer.bind(BrowserAPI)
+    const serverWriter = new ServerMessageWriter();
+    const serverReader = new ServerMessageReader();
+    onmessage = (e) => serverReader.addPayload(e.data)
+    fetch("CloudFormationResourceSpecification.json").then(async response => {
+        const blob = await response.text()
+        console.log("fetched resource specification, blob length is " + blob.length);
+        serverConstructor(serverReader, serverWriter, blob);
 
-fetch("CloudFormationResourceSpecification.json").then(async response => {
-    const blob = await response.text()
-    console.log("fetched resource specification, blob length is " + blob.length);
-    BrowserAPI.jsonServer(serverReader, serverWriter, blob)
-})
+    })
+}

@@ -1,7 +1,7 @@
 package cloudformation
 
 import core.deltas.DeltaWithPhase
-import core.deltas.path.{NodeChildPath, PathRoot}
+import core.deltas.path.{FieldPath, NodeChildPath, NodePath, PathRoot}
 import core.language.Compilation
 import core.language.node.Node
 import deltas.expression.StringLiteralDelta
@@ -12,13 +12,16 @@ import deltas.yaml.YamlCoreDelta
 object ConvertObjectMemberKeysToStrings extends DeltaWithPhase {
   override def transformProgram(program: Node, compilation: Compilation): Unit = {
 
-    PathRoot(program).visitShape(JsonObjectLiteralDelta.MemberShape, path => {
-      val key = path(MemberKey).asInstanceOf[NodeChildPath]
-      key.current.shape match {
-        case StringLiteralDelta.Shape => key.replaceWith(key.current(JsonStringLiteralDelta.Value))
-        case YamlCoreDelta.TaggedNode => key.replaceWith(key.current(YamlCoreDelta.TagNode).asInstanceOf[Node](JsonStringLiteralDelta.Value))
-        case _ =>
-          throw new Exception("Only string literals allowed")
+    compilation.program.asInstanceOf[NodePath].visitShape(JsonObjectLiteralDelta.MemberShape, path => {
+      path(MemberKey) match {
+        case key: NodeChildPath =>
+          key.current.shape match {
+            case StringLiteralDelta.Shape => key.replaceWith(key.current(JsonStringLiteralDelta.Value))
+            case YamlCoreDelta.TaggedNode => key.replaceWith(key.current(YamlCoreDelta.TagNode).asInstanceOf[Node](JsonStringLiteralDelta.Value))
+            case _ =>
+              throw new Exception("Only string literals allowed")
+          }
+        case fieldPath: FieldPath if fieldPath.current.isInstanceOf[String] =>
       }
     })
 

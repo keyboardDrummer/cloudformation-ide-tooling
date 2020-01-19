@@ -13,6 +13,12 @@ class YamlCloudFormationTest extends AnyFunSuite with LanguageServerTest {
   val yamlLanguage = TestLanguageBuilder.buildWithParser(CloudFormationTest.language.yamlDeltas, UntilBestAndXStepsStopFunction(1))
   val yamlServer = new MiksiloLanguageServer(yamlLanguage)
 
+  test("json program") {
+    val program = """{ "Protocol": "email" }"""
+    val result = getDiagnostics(yamlServer, program)
+    assert(result.isEmpty)
+  }
+
   test("No diagnostics") {
     val program = SourceUtils.getResourceFileContents("AutoScalingMultiAZWithNotifications.yaml")
     val result = getDiagnostics(yamlServer, program)
