@@ -24,7 +24,7 @@
     "compile": "tsc",
     "watch": "tsc -w",
     "clean": "rimraf lib",
-    "copy": "cp src/index.html lib/index.html && cp -r ./localDependency/ lib/",
+    "copy": "cp src/index.html lib/index.html && cp src/yaml.html lib/yaml.html && cp -r ./localDependency/ lib/",
     "dev": "yarn run compile && yarn run copy && webpack --mode=development",
     "build": "yarn run compile && yarn run copy && webpack",
     "update:file-deps": "yarn run clean:file-deps && yarn install",

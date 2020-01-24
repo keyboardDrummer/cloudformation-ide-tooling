@@ -5,21 +5,17 @@ import jsonRpc._
 import languageServer.MiksiloLanguageServer
 import lsp.LSPServer
 
+import scala.concurrent.ExecutionContext
 import scala.scalajs.js.Dynamic.{global => g}
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
-object BrowserLogger extends Logger {
-  override def debug(message: String): Unit = {} //write(s"[DEBUG] $message\n")
 
-  override def info(message: String): Unit = g.console.info(message)
-
-  override def error(message: String): Unit = g.console.error(message)
-}
 
 @JSExportTopLevel("BrowserAPI")
 object BrowserAPI {
 
-  LazyLogging.logger = BrowserLogger
+  LazyLogging.logger = ConsoleLogger
+  AfterIOExecution.context = SetTimeoutContext
 
   @JSExport
   def jsonServer(reader: JSMessageReader, writer: JSMessageWriter, resourceSpecification: String): Unit = {
