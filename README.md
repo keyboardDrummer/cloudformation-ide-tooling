@@ -10,6 +10,14 @@ This project contains multiple sub-projects that provide rich editor tooling for
 ### Getting started
 This project uses the build tool [sbt](https://www.scala-sbt.org). To work with this project, make sure you've installed sbt.
 
-To try out the CFT language tooling in VS Code, make sure the VS Code executable `code` is available on your path and run `sbt languageServer/fastvscode`, this will start an instance of VS Code with language support for CloudFormation Templates.
+To try out the CFT language tooling in VS Code, make sure the VS Code executable `code` is available on your path and run 
 
-To try out the CFT language tooling in the browser,  run `sbt browserLanguageServer/fastbrowser`, and once the local webserver is started navigate to the address it outputs.
+`sbt languageServer/fastvscode`
+
+this will start an instance of VS Code with language support for CloudFormation Templates.
+
+To try out the CFT language tooling in the browser,  run
+
+`sbt browserLanguageServer/fastbrowser`
+
+and once the local webserver is started navigate to the address it outputs.
