@@ -1,5 +1,5 @@
 # AWS CloudFormation Templates for Visual Studio Code
-This extention adds rich language support for AWS CloudFormation Templates to Visual Studio Code. It works for both JSON and YAML templates, as long as the file extensions are respectively `.cf.json` or `.cf.yaml`.
+This extension adds rich language support for AWS CloudFormation Templates to Visual Studio Code. It works for both JSON and YAML templates, as long as the file extensions are respectively `.cf.json` or `.cf.yaml`.
 
 ## Quick Start
 1. Install the extension
@@ -30,3 +30,7 @@ This extension requires Java to run. It looks for the Java home directory in the
 ## Contributing
 
 The best way to contribute to this extensions is to use it and file issues on the GitHub repository. Thank you! Also please rate the extension and leave honest feedback, I'll be sure to read it.
+
+## Repository structure
+The folder CloudFormationLanguageServer contains the code that defines the CloudFormation language and starts a Node LSP server for that language.
+The folder cloudFormationBrowserExample contains a web application that 
