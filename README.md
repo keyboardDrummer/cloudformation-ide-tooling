@@ -1,4 +1,5 @@
-### Repository structure
+CloudFormation IDE Tooling [![Build Status](https://travis-ci.org/keyboardDrummer/cloudformation-ide-tooling.svg?branch=master)](https://travis-ci.org/keyboardDrummer/Miksilo)
+==========
 
 This project contains multiple sub-projects that provide rich editor tooling for [CloudFormation Templates](https://aws.amazon.com/cloudformation/resources/templates/) (CFT) for different editors. It contains the following sub-projects:
 - [languageServer](languageServer): A CloudFormation Template LSP server that runs on Node and on the JVM.
