@@ -180,7 +180,7 @@ function prepareExecutable(mode: Mode, language: LanguageConfiguration): Executa
 
 	language.miksiloName = language.miksiloName || language.vscodeName;
 	executable.args.push(language.miksiloName)
-	executable.args.push(__dirname + "/../CloudFormationResourceSpecification.json")
+	executable.args.push(`${__dirname}/CloudFormationResourceSpecification.json`)
 	//"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=localhost:1044",
 	//"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=6007",
 	return executable;

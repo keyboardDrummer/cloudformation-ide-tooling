@@ -102,7 +102,13 @@ lazy val modularLanguages = crossProject(JVMPlatform, JSPlatform).
   ).dependsOn(miksiloLanguageServer,
   editorParser % "compile->compile;test->test" /* for bigrammar testing utils*/ )
 
-lazy val vscode = taskKey[Unit]("Run VS Code with Miksilo")
+
+def languageServerCommonTask(assemblyFile: String) = {
+  val copyJar = Process(Seq("cp", assemblyFile, "./vscode-extension/out/CloudFormationLanguageServer.js"))
+  val copySpec = Process(Seq("cp", "./CloudFormationResourceSpecification.json", "./vscode-extension/out/"))
+  val yarn = Process(Seq("yarn", "compile"), file("./vscode-extension"))
+  copyJar.#&&(copySpec).#&&(yarn)
+}
 
 lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
   crossType(CrossType.Full).
@@ -111,13 +117,22 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
   jsSettings(
     fastvscode := {
       val assemblyFile: String = (fastOptJS in Compile).value.data.getAbsolutePath
-      val extensionDirectory: File = file("./extension").getAbsoluteFile
-      val tsc = Process("tsc", file("./extension"))
-      val vscode = Process(Seq("code", s"--extensionDevelopmentPath=$extensionDirectory"),
-        None,
-        "JSMIKSILO" -> assemblyFile)
+      val extensionDirectory: File = file("./vscode-extension").getAbsoluteFile
+      val vscode = Process(Seq("code", s"--extensionDevelopmentPath=$extensionDirectory"), None)
 
-      tsc.#&&(vscode).run
+      languageServerCommonTask(assemblyFile).#&&(vscode).run
+    },
+
+    vscodeprepublish := {
+      val assemblyFile: String = (fullOptJS in Compile).value.data.getAbsolutePath
+      languageServerCommonTask(assemblyFile).run
+    },
+
+    fullvscode := {
+      val assemblyFile: String = (fullOptJS in Compile).value.data.getAbsolutePath
+      val extensionDirectory: File = file("./vscode-extension").getAbsoluteFile
+      val vscode = Process(Seq("code", s"--extensionDevelopmentPath=$extensionDirectory"), None)
+      languageServerCommonTask(assemblyFile).#&&(vscode).run
     }).
   settings(
     name := "languageServer",
@@ -130,7 +145,14 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
   ).dependsOn(LSPProtocol, modularLanguages % "compile->compile;test->test", miksiloLanguageServer)
 
 lazy val fastvscode = taskKey[Unit]("Run VS Code Fast")
+lazy val vscodeprepublish = taskKey[Unit]("Build VS Code")
+lazy val fullvscode = taskKey[Unit]("Run VS Code Optimized")
 
+def browserLanguageServerCommonTask(assemblyFile: String) = {
+  val copy = Process(Seq("cp", assemblyFile, "./cloudFormationBrowserExample/localDependency/server.js"))
+  val yarn = Process(Seq("yarn", "dev"), file("./cloudFormationBrowserExample"))
+  copy.#&&(yarn)
+}
 lazy val browserLanguageServer = project.
   in(file("browserLanguageServer")).
   enablePlugins(ScalaJSPlugin).
@@ -138,18 +160,12 @@ lazy val browserLanguageServer = project.
   settings(
     fastbrowser := {
       val assemblyFile: String = (fastOptJS in Compile).value.data.getAbsolutePath
-      val copy = Process(Seq("cp", assemblyFile, "./cloudFormationBrowserExample/localDependency/server.js"))
-      val yarn = Process(Seq("yarn", "dev"), file("./cloudFormationBrowserExample"))
-
-      copy.#&&(yarn).run
+      browserLanguageServerCommonTask(assemblyFile).run
     },
 
     fullbrowser := {
       val assemblyFile: String = (fullOptJS in Compile).value.data.getAbsolutePath
-      val copy = Process(Seq("cp", assemblyFile, "./cloudFormationBrowserExample/localDependency/server.js"))
-      val yarn = Process(Seq("yarn", "install"), file("./cloudFormationBrowserExample"))
-
-      copy.#&&(yarn).run
+      browserLanguageServerCommonTask(assemblyFile).run
     }).
   settings(
     name := "browserLanguageServer",

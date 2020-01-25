@@ -9,8 +9,6 @@ import scala.concurrent.ExecutionContext
 import scala.scalajs.js.Dynamic.{global => g}
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
-
-
 @JSExportTopLevel("BrowserAPI")
 object BrowserAPI {
 

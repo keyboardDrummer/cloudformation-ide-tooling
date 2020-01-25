@@ -97,7 +97,7 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile && cp ../CloudFormationLanguageServer/target/scala-2.12/CloudFormationLanguageServer.jar ./out",
+		"vscode:prepublish": "cd .. && sbt languageServerJS/vscodeprepublish",
 		"compile": "tsc -p ./",
 		"watch": "tsc -w -p ./",
 		"update-vscode": "node ./node_modules/vscode/bin/install",
