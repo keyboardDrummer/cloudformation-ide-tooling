@@ -17,7 +17,8 @@
     "style-loader": "1.1.2",
     "css-loader": "3.4.2",
     "ttf-loader": "1.0.2",
-    "file-loader": "5.0.2"
+    "file-loader": "5.0.2",
+    "servez": "1.4.0"
   },
   "scripts": {
     "prepare": "yarn run clean && yarn run build",
@@ -25,7 +26,7 @@
     "watch": "tsc -w",
     "clean": "rimraf lib",
     "copy": "cp src/index.html lib/index.html && cp src/yaml.html lib/yaml.html && cp -r ./localDependency/ lib/",
-    "dev": "yarn run compile && yarn run copy && webpack --mode=development",
+    "dev": "yarn run compile && yarn run copy && webpack --mode=development && cd lib && servez",
     "build": "yarn run compile && yarn run copy && webpack",
     "update:file-deps": "yarn run clean:file-deps && yarn install",
     "clean:file-deps": "yarn run clean:monaco-languageclient",

@@ -149,8 +149,8 @@ lazy val vscodeprepublish = taskKey[Unit]("Build VS Code")
 lazy val fullvscode = taskKey[Unit]("Run VS Code Optimized")
 
 def browserLanguageServerCommonTask(assemblyFile: String) = {
-  val copy = Process(Seq("cp", assemblyFile, "./cloudFormationBrowserExample/localDependency/server.js"))
-  val yarn = Process(Seq("yarn", "dev"), file("./cloudFormationBrowserExample"))
+  val copy = Process(Seq("cp", assemblyFile, "./browserClientExample/localDependency/server.js"))
+  val yarn = Process(Seq("yarn", "dev"), file("./browserClientExample"))
   copy.#&&(yarn)
 }
 lazy val browserLanguageServer = project.
