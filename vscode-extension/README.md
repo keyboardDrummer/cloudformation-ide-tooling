@@ -28,5 +28,7 @@ This extension requires Java to run. It looks for the Java home directory in the
 1. on the current system path
 
 ## Contributing
-
 The best way to contribute to this extensions is to use it and file issues on the GitHub repository. Thank you! Also please rate the extension and leave honest feedback, I'll be sure to read it.
+
+## Architecture
+This extension provides rich language support using a [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) server provided by [this project](../languageServer). It connects to that LSP server using [vscode-languageclient](https://www.npmjs.com/package/vscode-languageclient).
