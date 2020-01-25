@@ -1,0 +1,3 @@
+This project defines a CloudFormation Template LSP server that runs in the browser. It only contains the file [BrowserAPI.scala](browserLanguageServer/src/main/scala/cloudformation/BrowserAPI.scala) which wraps the CloudFormation Template language server defined in the [languageServer](languageServer) project in an API that is accessible from the browser.
+
+Because of the way [sbt-crossproject](https://github.com/portable-scala/sbt-crossproject) works, the CloudFormation Template LSP servers that target the browser and Node need to be in separate sbt projects to generate separate artifacts, that's why we have this almost empty project.
