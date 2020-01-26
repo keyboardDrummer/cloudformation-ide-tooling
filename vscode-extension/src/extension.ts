@@ -40,7 +40,7 @@ class JVMMode extends Mode {
     setupExecutable(executable: Executable): void {
     	executable.command = "java";
 
-	    executable.args = [this.jar]
+	    executable.args = ["-jar", this.jar]
     }
 
     toString() {
@@ -79,7 +79,7 @@ function getMode(): Mode | undefined {
 	}
 	const jar: string = `${__dirname}/CloudFormationLanguageServer.jar`;
 	if (fs.existsSync(jar)) {
-	    return new JVMMode(jar, "Found ${__dirname}/CloudFormationLanguageServer.jar");
+	    return new JVMMode(jar, `Found ${jar}`);
 	}
 
 	const nodeProgram: string = workspace.getConfiguration('miksilo').get("js") || `${__dirname}/CloudFormationLanguageServer.js`
@@ -181,8 +181,6 @@ function prepareExecutable(mode: Mode, language: LanguageConfiguration): Executa
 	language.miksiloName = language.miksiloName || language.vscodeName;
 	executable.args.push(language.miksiloName)
 	executable.args.push(`${__dirname}/CloudFormationResourceSpecification.json`)
-	//"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=localhost:1044",
-	//"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=6007",
 	return executable;
 }
 

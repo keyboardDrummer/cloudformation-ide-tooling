@@ -1,7 +1,7 @@
 package cloudformation
 
 import core.SourceUtils
-import core.bigrammar.TestLanguageGrammarUtils
+import core.deltas.LanguageFromDeltas
 import core.parsers.editorParsers.{Position, SourceRange, UntilBestAndXStepsStopFunction}
 import languageServer.{LanguageServerTest, MiksiloLanguageServer}
 import lsp._
@@ -137,9 +137,9 @@ class JsonCloudFormationTest extends AnyFunSuite with LanguageServerTest {
   }
 
   test("Parse example") {
-    val utils = new TestLanguageGrammarUtils(CloudFormationTest.language.jsonDeltas)
+    val json = TestLanguageBuilder.buildWithParser(CloudFormationTest.language.jsonDeltas)
     val source = SourceUtils.getResourceFileContents("AutoScalingMultiAZWithNotifications.json")
-    utils.parse(source)
+    json.compileString(source)
   }
 
   test("Code completion for property when most of the line is missing") {
