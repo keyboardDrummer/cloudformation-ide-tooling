@@ -1,17 +1,16 @@
 import sbt.Keys.{homepage, scmInfo}
 
 import scala.sys.process._
-import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
+import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
+
+import scala.reflect.io.File
 
 lazy val cloudformation = project
   .in(file("."))
   .aggregate(
-    editorParser.jvm,
-    LSPProtocol.jvm,
-    LSPProtocol.js,
-    miksiloLanguageServer.jvm,
-    modularLanguages.jvm,
-    languageServer.jvm
+    languageServer.jvm,
+    languageServer.js,
+    browserLanguageServer
   )
 
 lazy val commonSettings = Seq(
@@ -39,88 +38,42 @@ lazy val assemblySettings = Seq(
   }
 )
 
-lazy val editorParser = crossProject(JVMPlatform, JSPlatform).
-  crossType(CrossType.Full).
-  in(file("Miksilo/editorParser")).
-  settings(commonSettings: _*).
-  jvmSettings(
-
-    // Only used for SourceUtils, should get rid of it.
-    // https://mvnrepository.com/artifact/org.scala-lang/scala-reflect
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.13.1"
-  )
-
-lazy val LSPProtocol = crossProject(JVMPlatform, JSPlatform).
-  crossType(CrossType.Full).
-  in(file("Miksilo/LSPProtocol")).
-  settings(commonSettings: _*).
-  settings(
-    libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.8.1",
-  ).
-  jsSettings(scalacOptions += "-P:scalajs:sjsDefinedByDefault").
-  dependsOn(editorParser)
-
-lazy val miksiloLanguageServer = crossProject(JVMPlatform, JSPlatform).
-  crossType(CrossType.Pure).
-  in(file("Miksilo/languageServer")).
-  settings(commonSettings: _*).
-  settings(
-    assemblySettings,
-
-    organization := "com.github.keyboardDrummer",
-    homepage := Some(url("http://keyboarddrummer.github.io/Miksilo/")),
-    scmInfo := Some(ScmInfo(url("https://github.com/keyboardDrummer/Miksilo"),
-      "git@github.com:keyboardDrummer/Miksilo.git")),
-    developers := List(Developer("keyboardDrummer",
-      "Remy Willems",
-      "rgv.willems@gmail.com",
-      url("https://github.com/keyboardDrummer"))),
-    licenses += ("MIT", url("https://github.com/keyboardDrummer/Miksilo/blob/master/LICENSE")),
-    publishMavenStyle := true,
-
-    publishTo := Some(
-      if (isSnapshot.value)
-        Opts.resolver.sonatypeSnapshots
-      else
-        Opts.resolver.sonatypeStaging
-    ),
-
-  ).dependsOn(editorParser % "compile->compile;test->test", LSPProtocol)
-
-lazy val modularLanguages = crossProject(JVMPlatform, JSPlatform).
-  crossType(CrossType.Full).
-  in(file("Miksilo/modularLanguages")).
-  settings(commonSettings: _*).
-  settings(
-    name := "modularLanguages",
-    assemblySettings,
-    mainClass in Compile := Some("deltas.Program"),
-
-    // byteCode parser
-    libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
-
-  ).dependsOn(miksiloLanguageServer,
-  editorParser % "compile->compile;test->test" /* for bigrammar testing utils*/ )
-
-
 def languageServerCommonTask(assemblyFile: String) = {
-  val copyJar = Process(Seq("cp", assemblyFile, "./vscode-extension/out/CloudFormationLanguageServer.js"))
+  val extension = assemblyFile.split("\\.").last
+  val removePrevious = Process(Seq("rm", "-f", "./vscode-extension/out/CloudFormationLanguageServer.*"))
+  val copyJar = Process(Seq("cp", assemblyFile, s"./vscode-extension/out/CloudFormationLanguageServer.${extension}"))
   val copySpec = Process(Seq("cp", "./CloudFormationResourceSpecification.json", "./vscode-extension/out/"))
   val yarn = Process(Seq("yarn", "compile"), file("./vscode-extension"))
-  copyJar.#&&(copySpec).#&&(yarn)
+  removePrevious.#&&(copyJar).#&&(copySpec).#&&(yarn)
+}
+
+def vscodeCommonTask(assemblyFile: String) = {
+  val extensionDirectory = file("./vscode-extension").getAbsolutePath
+  val vscode = Process(Seq("code", s"--extensionDevelopmentPath=$extensionDirectory"), None)
+  languageServerCommonTask(assemblyFile).#&&(vscode)
 }
 
 lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
   crossType(CrossType.Full).
   in(file("languageServer")).
   settings(commonSettings: _*).
+  jvmSettings(assemblySettings: _*).
+  jvmSettings(
+    fastvscode := {
+      vscodeCommonTask(assembly.value.getAbsolutePath).run
+    },
+
+    fullvscode := {
+      vscodeCommonTask(assembly.value.getAbsolutePath).run
+    }
+  ).
   jsSettings(
+    scalaJSUseMainModuleInitializer := true,
+    scalaJSModuleKind := ModuleKind.CommonJSModule,
+
     fastvscode := {
       val assemblyFile: String = (fastOptJS in Compile).value.data.getAbsolutePath
-      val extensionDirectory: File = file("./vscode-extension").getAbsoluteFile
-      val vscode = Process(Seq("code", s"--extensionDevelopmentPath=$extensionDirectory"), None)
-
-      languageServerCommonTask(assemblyFile).#&&(vscode).run
+      vscodeCommonTask(assemblyFile).run
     },
 
     vscodeprepublish := {
@@ -130,19 +83,18 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
 
     fullvscode := {
       val assemblyFile: String = (fullOptJS in Compile).value.data.getAbsolutePath
-      val extensionDirectory: File = file("./vscode-extension").getAbsoluteFile
-      val vscode = Process(Seq("code", s"--extensionDevelopmentPath=$extensionDirectory"), None)
-      languageServerCommonTask(assemblyFile).#&&(vscode).run
+      vscodeCommonTask(assemblyFile).run
     }).
   settings(
     name := "languageServer",
 
     mainClass in Compile := Some("cloudformation.Program"),
-    scalaJSUseMainModuleInitializer := true,
-    scalaJSModuleKind := ModuleKind.CommonJSModule,
     // https://mvnrepository.com/artifact/com.typesafe.play/play-json
     libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.8.0",
-  ).dependsOn(LSPProtocol, modularLanguages % "compile->compile;test->test", miksiloLanguageServer)
+
+    // https://mvnrepository.com/artifact/com.github.keyboardDrummer/modularlanguages
+    libraryDependencies += "com.github.keyboardDrummer" %%% "modularlanguages" % "0.0.3"
+  )
 
 lazy val fastvscode = taskKey[Unit]("Run VS Code Fast")
 lazy val vscodeprepublish = taskKey[Unit]("Build VS Code")

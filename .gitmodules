@@ -1,4 +1,0 @@
-[submodule "Miksilo"]
-	path = Miksilo
-	url = https://github.com/keyboardDrummer/Miksilo.git
-	branch = master
