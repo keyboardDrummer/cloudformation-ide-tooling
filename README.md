@@ -13,11 +13,7 @@ This project uses the build tool [sbt](https://www.scala-sbt.org). To work with 
 #### VS Code
 To try out the CFT language tooling in VS Code, make sure the VS Code executable `code` is available on your path and run 
 
-`sbt languageServerJVM/fastvscode` 
-
-or
-
-`sbt languageServerJS/fastvscode`
+`sbt languageServerJVM/fastvscode` or `sbt languageServerJS/fastvscode`
 
 to start an instance of VS Code with language support for CloudFormation Templates, with the language support running on the JVM or Node respectively.
 
