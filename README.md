@@ -15,11 +15,11 @@ To try out the CFT language tooling in VS Code, make sure the VS Code executable
 
 `sbt languageServerJVM/fastvscode` 
 
-to run it with the JVM, and 
+or
 
 `sbt languageServerJS/fastvscode`
 
-to run it with Node. Either will start an instance of VS Code with language support for CloudFormation Templates.
+to start an instance of VS Code with language support for CloudFormation Templates, with the language support running on the JVM or Node respectively.
 
 #### Browser
 To try out the CFT language tooling in the browser,  run
