@@ -5,6 +5,7 @@ import { Executable, LanguageClient, LanguageClientOptions, ServerOptions, Execu
 import * as path from 'path'
 import * as fs from 'fs'
 import TelemetryReporter from 'vscode-extension-telemetry';
+import * as jvmDetector from './requirements';
 
 interface LanguageConfiguration {
 	vscodeName: string,
@@ -23,9 +24,27 @@ const languages: Array<LanguageConfiguration> = [
 let reporter: TelemetryReporter;
 
 export function activate(context: ExtensionContext) {
+    createReporter(context)
+	reporter.sendTelemetryEvent("activate")
 
-	workspace.onDidChangeConfiguration(() => activateJar(context));
-	activateJar(context);
+	workspace.onDidChangeConfiguration(() => activateWithConfig(context));
+	activateWithConfig(context);
+}
+
+function createReporter(context: ExtensionContext) {
+    const extensionPath = path.join(context.extensionPath, "package.json");
+    const packageFile = JSON.parse(fs.readFileSync(extensionPath, 'utf8'));
+
+	let version = "unknown"
+	let extensionId = "unknown"
+
+    if (packageFile) {
+		version = packageFile.version;
+		extensionId = packageFile.name
+	}
+
+	// create telemetry reporter on extension activation
+	reporter = new TelemetryReporter(extensionId, version, "4f5e6451-3d46-49f6-a295-ade5e6d47d47");
 }
 
 abstract class Mode {
@@ -34,17 +53,23 @@ abstract class Mode {
 }
 
 class JVMMode extends Mode {
-    constructor(readonly jar: string, reason: string = "") {
+
+    constructor(readonly jvmData: jvmDetector.RequirementsData, readonly jar: string, reason: string = "") {
         super(reason);
     }
-    setupExecutable(executable: Executable): void {
-    	executable.command = "java";
 
+    setupExecutable(executable: Executable): void {
+    	executable.command = this.getExecutable();
 	    executable.args = ["-jar", this.jar]
     }
 
     toString() {
-        return "JVM with jar " + this.jar;
+        return `JVM at ${this.getExecutable()} with jar ${this.jar}`;
+    }
+
+    private getExecutable() {
+        const javaHome = this.jvmData.java_home;
+        return path.join(javaHome, "/bin/java");
     }
 }
 
@@ -64,22 +89,27 @@ class JSMode extends Mode {
     }
 }
 
-function getMode(): Mode | undefined {
-    if (process.env.MIKSILO) {
-        return new JVMMode(process.env.MIKSILO, "JVM language server passed in environment variable MIKSILO");
+async function getMode(): Promise<Mode | undefined> {
+	const jvmData = await jvmDetector.resolveRequirements().catch(_ => null);
+    if (!jvmData) {
+        reporter.sendTelemetryEvent("javaNotFound")
+    }
+
+    if (jvmData && process.env.MIKSILO) {
+        return new JVMMode(jvmData, process.env.MIKSILO, "JVM language server passed in environment variable MIKSILO.");
     }
 
     if (process.env.JSMIKSILO) {
-        return new JSMode(process.env.JSMIKSILO, "Node language server passed in environment variable JSMIKSILO");
+        return new JSMode(process.env.JSMIKSILO, "Node language server passed in environment variable JSMIKSILO.");
     }
 
 	const settingsJar: string = workspace.getConfiguration('miksilo').get("jar")
-	if (settingsJar) {
-	    return new JVMMode(settingsJar, "Miksilo jar settings specified");
+	if (jvmData && settingsJar) {
+	    return new JVMMode(jvmData, settingsJar, "Miksilo jar specified in settings.");
 	}
 	const jar: string = `${__dirname}/CloudFormationLanguageServer.jar`;
 	if (fs.existsSync(jar)) {
-	    return new JVMMode(jar, `Found ${jar}`);
+	    return new JVMMode(jvmData, jar, `Found built-in jar.`);
 	}
 
 	const nodeProgram: string = workspace.getConfiguration('miksilo').get("js") || `${__dirname}/CloudFormationLanguageServer.js`
@@ -90,9 +120,9 @@ function getMode(): Mode | undefined {
 }
 
 let previousMode: Mode | undefined = undefined;
-function activateJar(context: ExtensionContext) {
+async function activateWithConfig(context: ExtensionContext) {
 
-	const mode = getMode()
+	const mode = await getMode()
 	if (mode === previousMode)
 		return;
 	previousMode = mode;
@@ -105,20 +135,6 @@ function activateJar(context: ExtensionContext) {
 		previousClient.dispose()
 	}
 	context.subscriptions.length = 0;
-	
-    const extensionPath = path.join(context.extensionPath, "package.json");
-    const packageFile = JSON.parse(fs.readFileSync(extensionPath, 'utf8'));
-
-	let version = "unknown"
-	let extensionId = "unknown"
-    if (packageFile) {
-		version = packageFile.version;
-		extensionId = packageFile.name
-	}
-
-	// create telemetry reporter on extension activation
-	reporter = new TelemetryReporter(extensionId, version, "4f5e6451-3d46-49f6-a295-ade5e6d47d47");
-	reporter.sendTelemetryEvent("activate")
 
 	// ensure it gets property disposed
 	context.subscriptions.push(reporter);
@@ -149,7 +165,9 @@ function activateLanguage(mode: Mode, language: LanguageConfiguration): Disposab
 	const info = (message: String) => {
 		languageClient.outputChannel.appendLine(`[INFO] ${message}`);
 	}
-	info(mode.reason);
+	if (mode.reason) {
+	    info(mode.reason);
+	}
 	languageClient.onReady().then(_ => {
 		const connectionTime = Date.now() - start;
 		info(`Connection time was ${connectionTime}`);
@@ -167,7 +185,6 @@ function activateLanguage(mode: Mode, language: LanguageConfiguration): Disposab
 	return languageClient.start();
 
 }
-
 
 function prepareExecutable(mode: Mode, language: LanguageConfiguration): Executable {
 
