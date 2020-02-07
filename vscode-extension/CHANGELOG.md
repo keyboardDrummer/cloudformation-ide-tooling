@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.0.14
+- Add a Node language server as a fallback for when Java is not installed.
+
 ## 0.0.12
 - Improve parse speed for files with parse errors
 - Add more telemetry

@@ -63,6 +63,12 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
       vscodeCommonTask(assembly.value.getAbsolutePath).run
     },
 
+    vscodeprepublish := {
+      val assemblyFile: String = assembly.value.getAbsolutePath
+      val copyJar = Process(Seq("cp", assemblyFile, s"./vscode-extension/out/CloudFormationLanguageServer.jar"))
+      copyJar.run
+    },
+
     fullvscode := {
       vscodeCommonTask(assembly.value.getAbsolutePath).run
     }
@@ -78,7 +84,9 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
 
     vscodeprepublish := {
       val assemblyFile: String = (fullOptJS in Compile).value.data.getAbsolutePath
-      languageServerCommonTask(assemblyFile).run
+      val copyJar = Process(Seq("cp", assemblyFile, s"./vscode-extension/out/CloudFormationLanguageServer.js"))
+      val copySpec = Process(Seq("cp", "./CloudFormationResourceSpecification.json", "./vscode-extension/out/"))
+      copyJar.#&&(copySpec).run
     },
 
     fullvscode := {
@@ -93,7 +101,7 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
     libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.8.0",
 
     // https://mvnrepository.com/artifact/com.github.keyboardDrummer/modularlanguages
-    libraryDependencies += "com.github.keyboardDrummer" %%% "modularlanguages" % "0.0.3"
+    libraryDependencies += "com.github.keyboardDrummer" %%% "modularlanguages" % "0.0.4"
   )
 
 lazy val fastvscode = taskKey[Unit]("Run VS Code Fast")

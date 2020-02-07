@@ -3,7 +3,6 @@ package cloudformation
 import core.language.Language
 import jsonRpc._
 import languageServer.MiksiloLanguageServer
-import lsp.LSPServer
 
 import scala.concurrent.ExecutionContext
 import scala.scalajs.js.Dynamic.{global => g}
@@ -13,7 +12,6 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 object BrowserAPI {
 
   LazyLogging.logger = ConsoleLogger
-  AfterIOExecution.context = SetTimeoutContext
 
   @JSExport
   def jsonServer(reader: JSMessageReader, writer: JSMessageWriter, resourceSpecification: String): Unit = {
