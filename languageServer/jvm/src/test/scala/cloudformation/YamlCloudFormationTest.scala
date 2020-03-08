@@ -1,6 +1,6 @@
 package cloudformation
 
-import _root_.lsp.{FileRange, HumanPosition, SymbolInformation, WorkspaceEdit}
+import _root_.lsp.{DocumentSymbolParams, FileRange, HumanPosition, SymbolInformation, TextDocumentIdentifier, WorkspaceEdit}
 import core.SourceUtils
 import core.parsers.editorParsers.{Position, SourceRange, TextEdit, UntilBestAndXStepsStopFunction}
 import languageServer._
@@ -40,25 +40,26 @@ class YamlCloudFormationTest extends AnyFunSuite with LanguageServerTest {
   test("Goto definition resource reference") {
     val program = SourceUtils.getResourceFileContents("AutoScalingMultiAZWithNotifications.yaml")
     val result: Seq[FileRange] = gotoDefinition(yamlServer, program, new HumanPosition(467, 32))
-    val expectation = Seq(FileRange(itemUri, SourceRange(new HumanPosition(443, 3), new HumanPosition(443, 25))))
-    assertResult(expectation)(result)
+    val expectation = SourceRange(new HumanPosition(443, 3), new HumanPosition(443, 25))
+    assertResult(expectation)(result.head.range)
   }
 
   test("Rename resource") {
     val program = SourceUtils.getResourceFileContents("AutoScalingMultiAZWithNotifications.yaml")
     val result: WorkspaceEdit = rename(yamlServer, program, new HumanPosition(467, 32), "boop")
-    val expectation = WorkspaceEdit(Map(
-      itemUri -> Seq(
+    val expectation = Seq(
         TextEdit(SourceRange(new HumanPosition(443, 3), new HumanPosition(443, 25)), "boop"),
         TextEdit(SourceRange(new HumanPosition(467, 28), new HumanPosition(467, 50)), "boop")
       )
-    ))
-    assertResult(expectation)(result)
+    assertResult(expectation)(result.changes.head._2)
   }
 
   test("Document symbols") {
     val program = SourceUtils.getResourceFileContents("AutoScalingMultiAZWithNotifications.yaml")
-    val result: Set[SymbolInformation] = documentSymbols(yamlServer, program).toSet
+    val document = openDocument(yamlServer, program)
+    val itemUri = document.uri
+    val result: Set[SymbolInformation] = yamlServer.documentSymbols(DocumentSymbolParams(TextDocumentIdentifier(itemUri))).toSet
+
     val expectation = Set(
       SymbolInformation("CPUAlarmLow",13,FileRange(itemUri,SourceRange(Position(471,2),Position(471,13))),None),
       SymbolInformation("WebServerGroup",13,FileRange(itemUri,SourceRange(Position(344,2),Position(344,16))),None),
@@ -90,7 +91,7 @@ class YamlCloudFormationTest extends AnyFunSuite with LanguageServerTest {
         |      KeyName: !Ref 'KeyName'
       """.stripMargin
     val result: Seq[FileRange] = gotoDefinition(yamlServer, program, new HumanPosition(9, 24))
-    val expectation = Seq(FileRange(itemUri, SourceRange(new HumanPosition(2, 3), new HumanPosition(2, 10))))
-    assertResult(expectation)(result)
+    val expectation = SourceRange(new HumanPosition(2, 3), new HumanPosition(2, 10))
+    assertResult(expectation)(result.head.range)
   }
 }

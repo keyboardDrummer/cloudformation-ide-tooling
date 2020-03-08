@@ -1,6 +1,7 @@
 package cloudformation
 
-import jsonRpc.{JVMMessageReader, JVMMessageWriter, JVMQueue, JsonRpcConnection, LambdaLogger, LazyLogging, WorkItem}
+import core.{LambdaLogger, LazyLogging}
+import jsonRpc.{JVMMessageReader, JVMMessageWriter, JVMQueue, JsonRpcConnection, WorkItem}
 import languageServer.LanguageServerMain
 
 object Program extends LanguageServerMain(Seq(

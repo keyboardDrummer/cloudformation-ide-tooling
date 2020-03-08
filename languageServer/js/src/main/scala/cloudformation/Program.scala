@@ -1,5 +1,6 @@
 package cloudformation
 
+import core.{LambdaLogger, LazyLogging}
 import jsonRpc._
 import languageServer.LanguageServerMain
 

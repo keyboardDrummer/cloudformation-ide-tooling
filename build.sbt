@@ -40,7 +40,7 @@ lazy val assemblySettings = Seq(
 
 def languageServerCommonTask(assemblyFile: String) = {
   val extension = assemblyFile.split("\\.").last
-  val removePrevious = Process(Seq("rm", "-f", "./vscode-extension/out/CloudFormationLanguageServer.*"))
+  val removePrevious = Process(Seq("rm", "-f", "./vscode-extension/out/CloudFormationLanguageServer.jar"))
   val copyJar = Process(Seq("cp", assemblyFile, s"./vscode-extension/out/CloudFormationLanguageServer.${extension}"))
   val copySpec = Process(Seq("cp", "./CloudFormationResourceSpecification.json", "./vscode-extension/out/"))
   val yarn = Process(Seq("yarn", "compile"), file("./vscode-extension"))
@@ -101,7 +101,7 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
     libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.8.0",
 
     // https://mvnrepository.com/artifact/com.github.keyboardDrummer/modularlanguages
-    libraryDependencies += "com.github.keyboardDrummer" %%% "modularlanguages" % "0.0.4"
+    libraryDependencies += "com.github.keyboardDrummer" %%% "modularlanguages" % "0.0.5"
   )
 
 lazy val fastvscode = taskKey[Unit]("Run VS Code Fast")
