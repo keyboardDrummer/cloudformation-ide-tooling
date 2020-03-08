@@ -1,6 +1,6 @@
 package cloudformation
 
-import core.SolveConstraintsDelta
+import core.{LazyLogging, SolveConstraintsDelta}
 import core.deltas.path.ConstraintBuilderExtension._
 import core.deltas.path.{NodePath, PathRoot}
 import core.deltas.{Contract, Delta}
@@ -11,7 +11,6 @@ import core.smarts.types.objects.PrimitiveType
 import deltas.expression.StringLiteralDelta
 import deltas.json.JsonObjectLiteralDelta.{MemberKey, MemberShape, ObjectLiteral, ObjectLiteralMember}
 import deltas.json.{JsonObjectLiteralDelta, JsonStringLiteralDelta}
-import jsonRpc.LazyLogging
 import ujson.{Obj, Value}
 
 class CloudFormationTemplate(resourceSpecificationOption: Option[String]) extends Delta with LazyLogging {

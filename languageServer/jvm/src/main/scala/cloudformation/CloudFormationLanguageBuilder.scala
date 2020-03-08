@@ -1,7 +1,7 @@
 package cloudformation
 
+import core.LazyLogging
 import core.language.Language
-import jsonRpc.LazyLogging
 import languageServer.LanguageBuilder
 
 import scala.io.Codec

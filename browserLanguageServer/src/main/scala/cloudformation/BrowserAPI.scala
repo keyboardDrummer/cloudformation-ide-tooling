@@ -1,11 +1,10 @@
 package cloudformation
 
+import core.LazyLogging
 import core.language.Language
 import jsonRpc._
 import languageServer.MiksiloLanguageServer
 
-import scala.concurrent.ExecutionContext
-import scala.scalajs.js.Dynamic.{global => g}
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
 @JSExportTopLevel("BrowserAPI")

@@ -1,11 +1,9 @@
 package cloudformation
 
 import core.SourceUtils
-import core.deltas.LanguageFromDeltas
 import core.parsers.editorParsers.{Position, SourceRange, UntilBestAndXStepsStopFunction}
 import languageServer.{LanguageServerTest, MiksiloLanguageServer}
-import lsp._
-import lsp.HumanPosition
+import lsp.{HumanPosition, _}
 import org.scalatest.funsuite.AnyFunSuite
 import util.TestLanguageBuilder
 
@@ -33,7 +31,7 @@ class JsonCloudFormationTest extends AnyFunSuite with LanguageServerTest {
         |}
         |""".stripMargin
     val result = getDiagnostics(jsonServer, program)
-    assert(result.size == 0)
+    assert(result.isEmpty)
   }
 
   test("resource without properties") {
@@ -47,7 +45,7 @@ class JsonCloudFormationTest extends AnyFunSuite with LanguageServerTest {
         |}
         |""".stripMargin
     val result = getDiagnostics(jsonServer, program)
-    assert(result.size == 0)
+    assert(result.isEmpty)
   }
 
   test("No diagnostics") {
@@ -94,25 +92,25 @@ class JsonCloudFormationTest extends AnyFunSuite with LanguageServerTest {
   test("Goto definition resource reference") {
     val program = SourceUtils.getResourceFileContents("AutoScalingMultiAZWithNotifications.json")
     val result: Seq[FileRange] = gotoDefinition(jsonServer, program, new HumanPosition(365, 37))
-    assertResult(Seq(FileRange(itemUri, SourceRange(new HumanPosition(336,6), new HumanPosition(336,28)))))(result)
+    assertResult(SourceRange(new HumanPosition(336,6), new HumanPosition(336,28)))(result.head.range)
   }
 
   test("Goto definition") {
     val program = SourceUtils.getResourceFileContents("AutoScalingMultiAZWithNotifications.json")
     val result: Seq[FileRange] = gotoDefinition(jsonServer, program, new HumanPosition(437, 36))
-    assertResult(Seq(FileRange(itemUri, SourceRange(new HumanPosition(42,6), new HumanPosition(42,17)))))(result)
+    assertResult(SourceRange(new HumanPosition(42,6), new HumanPosition(42,17)))(result.head.range)
   }
 
   test("Goto definition overloaded parameter") {
     val program = SourceUtils.getResourceFileContents("AutoScalingMultiAZWithNotifications.json")
     val result = gotoDefinition(jsonServer, program, new HumanPosition(445, 32))
-    assertResult(Seq(FileRange(itemUri, SourceRange(new HumanPosition(8,6), new HumanPosition(8,11)))))(result)
+    assertResult(SourceRange(new HumanPosition(8,6), new HumanPosition(8,11)))(result.head.range)
   }
 
   test("Goto definition overloaded parameter second") {
     val program = SourceUtils.getResourceFileContents("AutoScalingMultiAZWithNotifications.json")
     val result = gotoDefinition(jsonServer, program, new HumanPosition(425, 32))
-    assertResult(Seq(FileRange(itemUri, SourceRange(new HumanPosition(8,6), new HumanPosition(8,11)))))(result)
+    assertResult(SourceRange(new HumanPosition(8,6), new HumanPosition(8,11)))(result.head.range)
   }
 
   test("Code completion parameter") {
@@ -182,7 +180,8 @@ class JsonCloudFormationTest extends AnyFunSuite with LanguageServerTest {
     val start = new HumanPosition(10, 30)
     val result = server.gotoDefinition(DocumentPosition(document, start))
 
-    assertResult(Seq(FileRange(itemUri, SourceRange(new HumanPosition(3,6), new HumanPosition(3,13)))))(result)
+    val expectation = SourceRange(new HumanPosition(3, 6), new HumanPosition(3, 13))
+    assertResult(expectation)(result.head.range)
   }
 
   test("file only has a string literal") {

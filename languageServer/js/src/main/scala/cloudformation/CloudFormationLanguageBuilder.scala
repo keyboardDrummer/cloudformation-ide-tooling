@@ -1,7 +1,7 @@
 package cloudformation
 
+import core.LazyLogging
 import core.language.Language
-import jsonRpc.LazyLogging
 import languageServer.LanguageBuilder
 
 class CloudFormationLanguageBuilder(json: Boolean = true) extends LanguageBuilder with LazyLogging {

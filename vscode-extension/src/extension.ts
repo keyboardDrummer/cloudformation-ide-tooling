@@ -1,7 +1,7 @@
 'use strict';
 
 import { workspace, ExtensionContext, window, Disposable } from 'vscode';
-import { Executable, LanguageClient, LanguageClientOptions, ServerOptions, ExecutableOptions } from 'vscode-languageclient';
+import { TransportKind, LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient';
 import * as path from 'path'
 import * as fs from 'fs'
 import TelemetryReporter from 'vscode-extension-telemetry';
@@ -49,7 +49,7 @@ function createReporter(context: ExtensionContext) {
 
 abstract class Mode {
     constructor(readonly reason: string) {}
-    abstract setupExecutable(executable: Executable): void
+    abstract createServerOptions(args: Array<string>): ServerOptions
 }
 
 class JVMMode extends Mode {
@@ -58,9 +58,15 @@ class JVMMode extends Mode {
         super(reason);
     }
 
-    setupExecutable(executable: Executable): void {
-    	executable.command = this.getExecutable();
-	    executable.args = ["-jar", this.jar]
+    createServerOptions(args: Array<string>): ServerOptions {
+        return {
+            command: this.getExecutable(),
+            options: {
+                env: process.env,
+                stdio: 'pipe'
+            },
+            args: ["-jar", this.jar].concat(args)
+        }
     }
 
     toString() {
@@ -78,10 +84,15 @@ class JSMode extends Mode {
         super(reason);
     }
 
-    setupExecutable(executable: Executable): void {
-	    executable.command = "node";
-
-	    executable.args = [this.program]
+    createServerOptions(args: Array<string>): ServerOptions {
+        return {
+            module: this.program,
+            args: args,
+            transport: TransportKind.stdio,
+            options: {
+                env: process.env
+            }
+        }
     }
 
     toString() {
@@ -186,19 +197,13 @@ function activateLanguage(mode: Mode, language: LanguageConfiguration): Disposab
 
 }
 
-function prepareExecutable(mode: Mode, language: LanguageConfiguration): Executable {
-
-	const executable: Executable = Object.create(null);
-	const options: ExecutableOptions = Object.create(null);
-	options.env = process.env;
-	options.stdio = 'pipe';
-	executable.options = options;
-	mode.setupExecutable(executable);
+function prepareExecutable(mode: Mode, language: LanguageConfiguration): ServerOptions {
 
 	language.miksiloName = language.miksiloName || language.vscodeName;
-	executable.args.push(language.miksiloName)
-	executable.args.push(`${__dirname}/CloudFormationResourceSpecification.json`)
-	return executable;
+    const args = [language.miksiloName, `${__dirname}/CloudFormationResourceSpecification.json`]
+	const serverOptions = mode.createServerOptions(args);
+
+	return serverOptions;
 }
 
 export function deactivate() {

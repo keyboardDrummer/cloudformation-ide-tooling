@@ -4,6 +4,8 @@ import core.deltas.DeltaWithPhase
 import core.deltas.path._
 import core.language.Compilation
 import core.language.node.{FieldData, Node}
+import core.parsers.core.OffsetNode
+import core.parsers.editorParsers.OffsetNodeRange
 import deltas.json.JsonObjectLiteralDelta
 import deltas.yaml.YamlCoreDelta
 
@@ -19,10 +21,20 @@ object ConvertTagsToObjectDelta extends DeltaWithPhase {
           MemberKey -> ((if (tagName == "Ref" ) "" else "Fn::") + tagName),
           MemberValue -> tagValue)
       ))
-      path.range.foreach(r => newNode.sources.put(Members, r)) // TODO it would be nice if we could leave this out, if members would inherit the source position from their chidlren.
+      range(path.current).foreach(r => newNode.sources.put(Members, r)) // TODO it would be nice if we could leave this out, if members would inherit the source position from their children.
       path.asInstanceOf[ChildPath].replaceWith(newNode)
     })
   }
+
+  implicit val ordering: Ordering[OffsetNode] =
+    (x: OffsetNode, y: OffsetNode) => x.getAbsoluteOffset().compare(y.getAbsoluteOffset())
+
+  // TODO remove this when Node contains better sources
+  def range(node: Node): Option[OffsetNodeRange] =
+    if (node.sources.values.isEmpty) None
+    else Some(OffsetNodeRange(
+      node.sources.values.map(p => p.from).min,
+      node.sources.values.map(p => p.until).max))
 
   override def description = "Rewrite YAML tags into JSON objects"
 
