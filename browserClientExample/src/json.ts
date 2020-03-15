@@ -9,7 +9,7 @@
     }
 }
 
-import * as monaco from "monaco-editor";
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { createLanguageClient } from "./languageClient"
 import { createEditor } from "./createEditor"
 
@@ -89,7 +89,6 @@ const jsonValue =
      }
    }
  }`;
-createEditor(document.getElementById('json')!, jsonValue, "json")
-
+createEditor(document.getElementById('json')!, jsonValue, "json");
 const jsonLanguageClient = createLanguageClient('json');
 jsonLanguageClient.start();
