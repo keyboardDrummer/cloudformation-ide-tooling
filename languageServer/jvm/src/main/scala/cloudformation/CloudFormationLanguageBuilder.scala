@@ -1,8 +1,8 @@
 package cloudformation
 
-import core.LazyLogging
-import core.language.Language
-import languageServer.LanguageBuilder
+import miksilo.editorParser.LazyLogging
+import miksilo.languageServer.core.language.Language
+import miksilo.languageServer.server.LanguageBuilder
 
 import scala.io.Codec
 import scala.reflect.io.File

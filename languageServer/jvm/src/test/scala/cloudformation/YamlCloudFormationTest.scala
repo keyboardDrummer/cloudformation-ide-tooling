@@ -1,12 +1,11 @@
 package cloudformation
 
-import _root_.lsp.{DocumentSymbolParams, FileRange, HumanPosition, SymbolInformation, TextDocumentIdentifier, WorkspaceEdit}
-import core.SourceUtils
-import core.parsers.editorParsers.{Position, SourceRange, TextEdit, UntilBestAndXStepsStopFunction}
-import languageServer._
+import miksilo.editorParser.SourceUtils
+import miksilo.editorParser.parsers.editorParsers.{Position, SourceRange, TextEdit, UntilBestAndXStepsStopFunction}
+import miksilo.languageServer.server.{LanguageServerTest, MiksiloLanguageServer}
+import miksilo.lspprotocol.lsp.{DocumentSymbolParams, FileRange, HumanPosition, SymbolInformation, TextDocumentIdentifier, WorkspaceEdit}
+import miksilo.modularLanguages.util.TestLanguageBuilder
 import org.scalatest.funsuite.AnyFunSuite
-import util.TestLanguageBuilder._
-import util.TestLanguageBuilder
 
 class YamlCloudFormationTest extends AnyFunSuite with LanguageServerTest {
 

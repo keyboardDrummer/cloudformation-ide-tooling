@@ -6,7 +6,11 @@
 	"license": "MIT",
 	"version": "0.0.16",
 	"keywords": [
-		"cloudformation", "yaml", "json", "ide", "aws"
+		"cloudformation",
+		"yaml",
+		"json",
+		"ide",
+		"aws"
 	],
 	"repository": {
 		"type": "git",
@@ -17,19 +21,22 @@
 		"vscode": "^1.30.x"
 	},
 	"categories": [
-		"Programming Languages", "Linters", "Formatters", "Language Packs"
+		"Programming Languages",
+		"Linters",
+		"Formatters",
+		"Language Packs"
 	],
 	"activationEvents": [
-		"onLanguage:cloudFormation",
-		"onLanguage:yamlCloudFormation"
+		"onLanguage:CloudFormation JSON",
+		"onLanguage:CloudFormation YAML"
 	],
 	"main": "./out/extension",
 	"contributes": {
 		"languages": [
 			{
-				"id": "cloudFormation",
+				"id": "CloudFormation JSON",
 				"aliases": [
-					"cloudFormation"
+					"CloudFormation JSON"
 				],
 				"extensions": [
 					".cf.json"
@@ -37,9 +44,9 @@
 				"configuration": "./src/cloudFormation/json-language-configuration.json"
 			},
 			{
-				"id": "yamlCloudFormation",
+				"id": "CloudFormation YAML",
 				"aliases": [
-					"yamlCloudFormation"
+					"CloudFormation YAML"
 				],
 				"extensions": [
 					".cf.yaml"
@@ -49,23 +56,23 @@
 		],
 		"grammars": [
 			{
-				"language": "yamlCloudFormation",
+				"language": "CloudFormation YAML",
 				"scopeName": "source.yaml",
 				"path": "./src/cloudFormation/yaml-tmLanguage.json"
 			},
 			{
-				"language": "cloudFormation",
+				"language": "CloudFormation JSON",
 				"scopeName": "source.cloudFormation",
 				"path": "./src/cloudFormation/json-tmLanguage.json"
 			}
 		],
 		"configurationDefaults": {
-			"[cloudFormation]": {
+			"[CloudFormation JSON]": {
 				"editor.quickSuggestions": {
 					"strings": true
 				}
 			},
-			"[yamlCloudFormation]": {
+			"[CloudFormation YAML]": {
 				"editor.quickSuggestions": {
 					"strings": true
 				}

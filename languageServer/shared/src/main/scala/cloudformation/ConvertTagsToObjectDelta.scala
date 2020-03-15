@@ -1,16 +1,15 @@
 package cloudformation
 
-import core.deltas.DeltaWithPhase
-import core.deltas.path._
-import core.language.Compilation
-import core.language.node.{FieldData, Node}
-import core.parsers.core.OffsetNode
-import core.parsers.editorParsers.OffsetNodeRange
-import deltas.json.JsonObjectLiteralDelta
-import deltas.yaml.YamlCoreDelta
+import miksilo.editorParser.parsers.core.OffsetPointer
+import miksilo.editorParser.parsers.editorParsers.OffsetPointerRange
+import miksilo.languageServer.core.language.Compilation
+import miksilo.modularLanguages.core.deltas.DeltaWithPhase
+import miksilo.modularLanguages.core.deltas.path.{ChildPath, PathRoot}
+import miksilo.modularLanguages.core.node.{FieldData, Node}
+import miksilo.modularLanguages.deltas.yaml.YamlCoreDelta
 
 object ConvertTagsToObjectDelta extends DeltaWithPhase {
-  import JsonObjectLiteralDelta._
+  import miksilo.modularLanguages.deltas.json.JsonObjectLiteralDelta._
 
   override def transformProgram(program: Node, compilation: Compilation): Unit = {
     PathRoot(program).visitShape(YamlCoreDelta.TaggedNode, path => {
@@ -26,13 +25,13 @@ object ConvertTagsToObjectDelta extends DeltaWithPhase {
     })
   }
 
-  implicit val ordering: Ordering[OffsetNode] =
-    (x: OffsetNode, y: OffsetNode) => x.getAbsoluteOffset().compare(y.getAbsoluteOffset())
+  implicit val ordering: Ordering[OffsetPointer] =
+    (x: OffsetPointer, y: OffsetPointer) => x.offset.compare(y.offset)
 
   // TODO remove this when Node contains better sources
-  def range(node: Node): Option[OffsetNodeRange] =
+  def range(node: Node): Option[OffsetPointerRange] =
     if (node.sources.values.isEmpty) None
-    else Some(OffsetNodeRange(
+    else Some(OffsetPointerRange(
       node.sources.values.map(p => p.from).min,
       node.sources.values.map(p => p.until).max))
 
