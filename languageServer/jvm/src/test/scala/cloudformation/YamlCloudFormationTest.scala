@@ -13,7 +13,7 @@ class YamlCloudFormationTest extends AnyFunSuite with LanguageServerTest {
   val yamlServer = new MiksiloLanguageServer(yamlLanguage)
 
   test("json program") {
-    val program = """{ "Protocol": "email" }"""
+    val program = """{ Protocol: email }"""
     val result = getDiagnostics(yamlServer, program)
     assert(result.isEmpty)
   }
