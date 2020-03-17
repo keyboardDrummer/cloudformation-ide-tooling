@@ -101,7 +101,7 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
     libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.8.0",
 
     // https://mvnrepository.com/artifact/com.github.keyboardDrummer/modularlanguages
-    libraryDependencies += "com.github.keyboardDrummer" %%% "modularlanguages" % "0.1.3"
+    libraryDependencies += "com.github.keyboardDrummer" %%% "modularlanguages" % "0.1.4"
   )
 
 lazy val fastvscode = taskKey[Unit]("Run VS Code Fast")

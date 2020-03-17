@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.0.17
+- Fix bugs in the YAML parser
+
+## 0.0.16
+- Introduce incremental parsing, greatly speeding up the parsing.
+
 ## 0.0.14
 - Add a Node language server as a fallback for when Java is not installed.
 
