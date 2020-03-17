@@ -93,4 +93,10 @@ class YamlCloudFormationTest extends AnyFunSuite with LanguageServerTest {
     val expectation = SourceRange(new HumanPosition(2, 3), new HumanPosition(2, 10))
     assertResult(expectation)(result.head.range)
   }
+
+  test("createEnvironment parses") {
+    val program = SourceUtils.getResourceFileContents("createEnvironment.yaml")
+    val result = getDiagnostics(yamlServer, program)
+    assertResult(0)(result.size)
+  }
 }
