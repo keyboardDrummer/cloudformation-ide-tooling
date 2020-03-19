@@ -1,29 +1,29 @@
 package cloudformation
 
-import core.{LazyLogging, SolveConstraintsDelta}
-import core.deltas.path.ConstraintBuilderExtension._
-import core.deltas.path.{NodePath, PathRoot}
-import core.deltas.{Contract, Delta}
-import core.language.Language
-import core.smarts.ConstraintBuilder
-import core.smarts.scopes.objects.ConcreteScope
-import core.smarts.types.objects.PrimitiveType
-import deltas.expression.StringLiteralDelta
-import deltas.json.JsonObjectLiteralDelta.{MemberKey, MemberShape, ObjectLiteral, ObjectLiteralMember}
-import deltas.json.{JsonObjectLiteralDelta, JsonStringLiteralDelta}
+import miksilo.editorParser.LazyLogging
+import miksilo.languageServer.core.language.Language
+import miksilo.languageServer.core.smarts.ConstraintBuilder
+import miksilo.languageServer.core.smarts.scopes.objects.ConcreteScope
+import miksilo.languageServer.core.smarts.types.objects.PrimitiveType
+import miksilo.modularLanguages.core.SolveConstraintsDelta
+import miksilo.modularLanguages.core.deltas.{Contract, Delta}
+import miksilo.modularLanguages.core.deltas.path.{NodePath, PathRoot}
+import miksilo.modularLanguages.deltas.expression.StringLiteralDelta
+import miksilo.modularLanguages.deltas.json.{JsonObjectLiteralDelta, JsonStringLiteralDelta}
+import miksilo.modularLanguages.deltas.json.JsonObjectLiteralDelta.{MemberKey, MemberShape, ObjectLiteral, ObjectLiteralMember}
 import ujson.{Obj, Value}
 
 class CloudFormationTemplate(resourceSpecificationOption: Option[String]) extends Delta with LazyLogging {
 
-  val resourceTypes = resourceSpecificationOption.fold(Obj.apply())(resourceSpecification => {
+  private val resourceTypes = resourceSpecificationOption.fold(Obj.apply())(resourceSpecification => {
     val parsedFile = upickle.default.read[Value](resourceSpecification).obj
     parsedFile("ResourceTypes").asInstanceOf[Obj]
   })
 
   override def description: String = "Add cloudformation template semantics"
 
-  val propertyType = PrimitiveType("PropertyKey")
-  val valueType = PrimitiveType("Value")
+  private val propertyType = PrimitiveType("PropertyKey")
+  private val valueType = PrimitiveType("Value")
   override def inject(language: Language): Unit = {
     super.inject(language)
 
@@ -49,7 +49,7 @@ class CloudFormationTemplate(resourceSpecificationOption: Option[String]) extend
       filter(v => v.shape == JsonObjectLiteralDelta.Shape).map(v => ObjectLiteral(v))
     val members = resources.fold(Seq.empty[ObjectLiteralMember[NodePath]])(o => o.members)
     for (resource <- members) {
-      builder.declare(resource.getField(MemberKey), rootScope, valueType)
+      builder.declare(resource.key, rootScope, resource.node.getField(MemberKey), Some(valueType))
 
       if (resource.value.shape == JsonObjectLiteralDelta.Shape) {
         val resourceMembers: ObjectLiteral[NodePath] = resource.value
@@ -99,7 +99,7 @@ class CloudFormationTemplate(resourceSpecificationOption: Option[String]) extend
       case Some(_parameters) =>
         val parameters: ObjectLiteral[NodePath] = _parameters
         for (parameter <- parameters.members) {
-          builder.declare(parameter.node.getField(MemberKey), rootScope, valueType)
+          builder.declare(parameter.key, rootScope, parameter.node.getField(MemberKey), Some(valueType))
         }
       case _ =>
     }

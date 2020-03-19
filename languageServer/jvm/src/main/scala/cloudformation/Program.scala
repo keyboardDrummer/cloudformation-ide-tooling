@@ -1,20 +1,10 @@
 package cloudformation
 
-import core.{LambdaLogger, LazyLogging}
-import jsonRpc.{JVMMessageReader, JVMMessageWriter, JVMQueue, JsonRpcConnection, WorkItem}
-import languageServer.LanguageServerMain
+import miksilo.languageServer.JVMLanguageServer
 
-object Program extends LanguageServerMain(Seq(
+object Program extends JVMLanguageServer(Seq(
 
   new CloudFormationLanguageBuilder(json = true),
-  new CloudFormationLanguageBuilder(json = false)),
-  new JsonRpcConnection(
-    new JVMMessageReader(System.in),
-    new JVMMessageWriter(System.out)),
-  new JVMQueue[WorkItem]()) {
+  new CloudFormationLanguageBuilder(json = false))) {
 
-  override def main(args: Array[String]): Unit = {
-    LazyLogging.logger = new LambdaLogger(s => System.err.println(s))
-    super.main(args)
-  }
 }

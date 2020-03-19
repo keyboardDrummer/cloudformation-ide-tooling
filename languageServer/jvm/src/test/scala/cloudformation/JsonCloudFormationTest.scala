@@ -1,11 +1,11 @@
 package cloudformation
 
-import core.SourceUtils
-import core.parsers.editorParsers.{Position, SourceRange, UntilBestAndXStepsStopFunction}
-import languageServer.{LanguageServerTest, MiksiloLanguageServer}
-import lsp.{HumanPosition, _}
+import miksilo.editorParser.SourceUtils
+import miksilo.editorParser.parsers.editorParsers.{Position, SourceRange, UntilBestAndXStepsStopFunction}
+import miksilo.languageServer.server.{LanguageServerTest, MiksiloLanguageServer}
+import miksilo.lspprotocol.lsp.{CompletionList, DocumentPosition, FileRange, HumanPosition}
+import miksilo.modularLanguages.util.TestLanguageBuilder
 import org.scalatest.funsuite.AnyFunSuite
-import util.TestLanguageBuilder
 
 object CloudFormationTest {
   val file = SourceUtils.getResourceFileContents("CloudFormationResourceSpecification.json")

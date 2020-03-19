@@ -1,0 +1,536 @@
+---
+Resources:
+  IdentifyEnvironmentCreationAttributesActivity:
+    Type:  AWS::StepFunctions::Activity
+    Properties:
+      Name: IdentifyEnvironmentCreationAttributes
+  CreateEnvironmentOwnerMembershipActivity:
+    Type:  AWS::StepFunctions::Activity
+    Properties:
+      Name: CreateEnvironmentOwnerMembership
+  CreateEnvironmentKeyPairActivity:
+    Type:  AWS::StepFunctions::Activity
+    Properties:
+      Name: CreateEnvironmentKeyPair
+  CreateCloudFormationStackActivity:
+    Type:  AWS::StepFunctions::Activity
+    Properties:
+      Name: CreateCloudFormationStack
+  CommitEnvironmentTagsActivity:
+    Type:  AWS::StepFunctions::Activity
+    Properties:
+      Name: CommitEnvironmentTags
+  HandleClientCreateFailureActivity:
+    Type:  AWS::StepFunctions::Activity
+    Properties:
+      Name: HandleClientCreateFailure
+  ValidateStackActivity:
+    Type:  AWS::StepFunctions::Activity
+    Properties:
+      Name: ValidateStack
+  ConnectToInstanceActivity:
+    Type:  AWS::StepFunctions::Activity
+    Properties:
+      Name: ConnectToInstance
+  HandleInternalFailureActivity:
+    Type:  AWS::StepFunctions::Activity
+    Properties:
+      Name: HandleInternalFailure
+  CleanupWorkflowDataActivity:
+    Type:  AWS::StepFunctions::Activity
+    Properties:
+      Name: CleanupWorkflowData
+  HandleConnectToInstanceFailureActivity:
+    Type:  AWS::StepFunctions::Activity
+    Properties:
+      Name: HandleConnectToInstanceFailure
+  CreateEnvironmentEc2StateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: CreateEnvironmentEc2
+      RoleArn:
+        Fn::GetAtt: [StepFunctionsExecutionRole, Arn]
+      DefinitionString:
+        Fn::Sub:
+          - |-
+            {
+              "StartAt": "IdentifyEnvironmentCreationAttributes",
+              "States": {
+                "IdentifyEnvironmentCreationAttributes": {
+                  "Type": "Task",
+                  "Resource": "${IdentifyEnvironmentCreationAttributesActivity}",
+                  "TimeoutSeconds": 10,
+                  "Next": "CreateEnvironmentOwnerMembership",
+                  "Retry" : [
+                        {
+                          "ErrorEquals": [ "AbortWorkflowException", "InvalidLifecycleStateException" ],
+                          "IntervalSeconds": 0,
+                          "MaxAttempts": 0
+                        },
+                        {
+                          "ErrorEquals": [ "States.ALL" ],
+                          "IntervalSeconds": 1,
+                          "MaxAttempts": 14,
+                          "BackoffRate": 2
+                        }
+                  ],
+                  "Catch" : [
+                        {
+                            "ErrorEquals" : [ "InvalidLifecycleStateException" ],
+                            "Next": "CleanupWorkflowData",
+                            "ResultPath": "$.error"
+                        },
+                        {
+                            "ErrorEquals" : [ "States.ALL" ],
+                            "Next": "HandleInternalFailure",
+                            "ResultPath": "$.error"
+                        }
+                    ]
+                },
+                "CreateEnvironmentOwnerMembership": {
+                    "Type": "Task",
+                    "Resource": "${CreateEnvironmentOwnerMembershipActivity}",
+                    "TimeoutSeconds": 10,
+                    "Retry" : [
+                        {
+                          "ErrorEquals": [ "AbortWorkflowException", "InvalidLifecycleStateException" ],
+                          "IntervalSeconds": 0,
+                          "MaxAttempts": 0
+                        },
+                        {
+                          "ErrorEquals": [ "States.ALL" ],
+                          "IntervalSeconds": 1,
+                          "MaxAttempts": 14,
+                          "BackoffRate": 2
+                        }
+                    ],
+                    "Catch" : [
+                        {
+                            "ErrorEquals" : [ "InvalidLifecycleStateException" ],
+                            "Next": "CleanupWorkflowData",
+                            "ResultPath": "$.error"
+                        },
+                        {
+                            "ErrorEquals" : [ "States.ALL" ],
+                            "Next": "HandleInternalFailure",
+                            "ResultPath": "$.error"
+                        }
+                    ],
+                    "Next": "CreateEnvironmentKeyPair"
+                },
+                "CreateEnvironmentKeyPair": {
+                    "Type": "Task",
+                    "Resource": "${CreateEnvironmentKeyPairActivity}",
+                    "TimeoutSeconds": 15,
+                    "Retry" : [
+                        {
+                          "ErrorEquals": [ "AbortWorkflowException", "InvalidLifecycleStateException" ],
+                          "IntervalSeconds": 0,
+                          "MaxAttempts": 0
+                        },
+                        {
+                          "ErrorEquals": [ "States.ALL" ],
+                          "IntervalSeconds": 1,
+                          "MaxAttempts": 14,
+                          "BackoffRate": 2
+                        }
+                    ],
+                    "Catch" : [
+                        {
+                            "ErrorEquals" : [ "InvalidLifecycleStateException" ],
+                            "Next": "CleanupWorkflowData",
+                            "ResultPath": "$.error"
+                        },
+                        {
+                            "ErrorEquals" : [ "States.ALL" ],
+                            "Next": "HandleInternalFailure",
+                            "ResultPath": "$.error"
+                        }
+                    ],
+                    "Next": "CreateCloudFormationStack"
+                },
+                "CreateCloudFormationStack": {
+                    "Type": "Task",
+                    "Resource": "${CreateCloudFormationStackActivity}",
+                    "TimeoutSeconds": 10,
+                    "Retry" : [
+                        {
+                          "ErrorEquals": [ "AbortWorkflowException", "InvalidLifecycleStateException" ],
+                          "IntervalSeconds": 0,
+                          "MaxAttempts": 0
+                        },
+                        {
+                          "ErrorEquals": [ "States.ALL" ],
+                          "IntervalSeconds": 1,
+                          "MaxAttempts": 14,
+                          "BackoffRate": 2
+                        }
+                    ],
+                    "Catch" : [
+                        {
+                            "ErrorEquals" : [ "InvalidLifecycleStateException" ],
+                            "Next": "CleanupWorkflowData",
+                            "ResultPath": "$.error"
+                        },
+                        {
+                            "ErrorEquals" : [ "States.ALL" ],
+                            "Next": "HandleInternalFailure",
+                            "ResultPath": "$.error"
+                        }
+                    ],
+                    "Next": "CommitEnvironmentTags"
+                },
+                "CommitEnvironmentTags": {
+                    "Type": "Task",
+                    "Resource": "${CommitEnvironmentTagsActivity}",
+                    "TimeoutSeconds": 10,
+                    "Retry" : [
+                        {
+                            "ErrorEquals": ["InvalidLifecycleStateException", "AbortWorkflowException", "WorkflowClientFailureException"],
+                            "IntervalSeconds": 0,
+                            "MaxAttempts": 0
+                        },
+                        {
+                            "ErrorEquals": ["WorkflowClientFailureRetryableException" ],
+                            "IntervalSeconds": 1,
+                            "MaxAttempts": 3,
+                            "BackoffRate": 2
+                        },
+                        {
+                            "ErrorEquals": [ "States.ALL" ],
+                            "IntervalSeconds": 1,
+                            "MaxAttempts": 14,
+                            "BackoffRate": 2
+                        }
+                    ],
+                    "Catch" : [
+                        {
+                            "ErrorEquals" : [ "WorkflowClientFailureException" , "WorkflowClientFailureRetryableException"],
+                            "Next": "HandleClientCreateFailure",
+                            "ResultPath": "$.error"
+                        },
+                        {
+                            "ErrorEquals" : [ "InvalidLifecycleStateException" ],
+                            "Next": "CleanupWorkflowData",
+                            "ResultPath": "$.error"
+                        },
+                        {
+                            "ErrorEquals" : [ "States.ALL" ],
+                            "Next": "HandleInternalFailure",
+                            "ResultPath": "$.error"
+                        }
+                    ],
+                    "Next": "WaitForStackCreation"
+                },
+                "WaitForStackCreation": {
+                    "Type": "Wait",
+                    "Seconds": 25,
+                    "Next": "ValidateStack"
+                },
+                "ValidateStack": {
+                  "Type": "Task",
+                  "Resource": "${ValidateStackActivity}",
+                  "TimeoutSeconds": 10,
+                  "Next": "DidStackFailToCreate",
+                  "Retry" : [
+                        {
+                          "ErrorEquals": [ "AbortWorkflowException", "InvalidLifecycleStateException" ],
+                          "IntervalSeconds": 0,
+                          "MaxAttempts": 0
+                        },
+                        {
+                          "ErrorEquals": [ "ResourcesNotCreatedException" ],
+                          "IntervalSeconds": 5,
+                          "MaxAttempts": 360,
+                          "BackoffRate": 1
+                        },
+                        {
+                          "ErrorEquals": [ "States.ALL" ],
+                          "IntervalSeconds": 1,
+                          "MaxAttempts": 14,
+                          "BackoffRate": 2
+                        }
+                  ],
+                  "Catch" : [
+                      {
+                          "ErrorEquals" : [ "InvalidLifecycleStateException" ],
+                          "Next": "CleanupWorkflowData",
+                          "ResultPath": "$.error"
+                      },
+                      {
+                          "ErrorEquals" : [ "States.ALL" ],
+                          "Next": "HandleInternalFailure",
+                          "ResultPath": "$.error"
+                      }
+                  ]
+                },
+                "DidStackFailToCreate": {
+                  "Type": "Choice",
+                  "Choices": [
+                    {
+                      "Variable": "$.validateStack.successfullyTerminateWorkflow",
+                      "BooleanEquals": true,
+                      "Next": "CleanupWorkflowData"
+                    }
+                  ],
+                  "Default": "ConnectToInstance"
+                },
+                "ConnectToInstance": {
+                    "Type": "Task",
+                    "Next": "CleanupWorkflowData",
+                    "Resource": "${ConnectToInstanceActivity}",
+                    "TimeoutSeconds": 20,
+                    "Retry" : [
+                        {
+                          "ErrorEquals": [ "AbortWorkflowException", "InvalidLifecycleStateException" ],
+                          "IntervalSeconds": 0,
+                          "MaxAttempts": 0
+                        },
+                        {
+                          "ErrorEquals": [ "ResourcesNotCreatedException" ],
+                          "IntervalSeconds": 2,
+                          "MaxAttempts": 360,
+                          "BackoffRate": 1
+                        },
+                        {
+                          "ErrorEquals": [ "States.ALL" ],
+                          "IntervalSeconds": 1,
+                          "MaxAttempts": 14,
+                          "BackoffRate": 2
+                        }
+                    ],
+                    "Catch" : [
+                        {
+                            "ErrorEquals" : [ "InvalidLifecycleStateException" ],
+                            "Next": "CleanupWorkflowData",
+                            "ResultPath": "$.error"
+                        },
+                        {
+                            "ErrorEquals" : [ "ResourcesNotCreatedException" ],
+                            "Next": "HandleConnectToInstanceFailure",
+                            "ResultPath": "$.error"
+                        },
+                        {
+                            "ErrorEquals" : [ "States.ALL" ],
+                            "Next": "HandleInternalFailure",
+                            "ResultPath": "$.error"
+                        }
+                    ]
+                },
+                "HandleInternalFailure": {
+                  "Type": "Task",
+                  "Next": "CleanupWorkflowData",
+                  "Resource": "${HandleInternalFailureActivity}",
+                  "TimeoutSeconds": 10,
+                  "Retry" : [
+                        {
+                          "ErrorEquals": [ "AbortWorkflowException", "InvalidLifecycleStateException" ],
+                          "IntervalSeconds": 0,
+                          "MaxAttempts": 0
+                        },
+                        {
+                          "ErrorEquals": [ "States.ALL" ],
+                          "IntervalSeconds": 1,
+                          "MaxAttempts": 14,
+                          "BackoffRate": 2
+                        }
+                  ],
+                  "Catch" : [
+                      {
+                          "ErrorEquals" : [ "InvalidLifecycleStateException" ],
+                          "Next": "CleanupWorkflowData",
+                          "ResultPath": "$.error"
+                      }
+                  ]
+                },
+                "HandleClientCreateFailure": {
+                  "Type": "Task",
+                  "Next": "CleanupWorkflowData",
+                  "Resource": "${HandleClientCreateFailureActivity}",
+                  "TimeoutSeconds": 10,
+                  "Retry" : [
+                        {
+                          "ErrorEquals": [ "AbortWorkflowException", "InvalidLifecycleStateException" ],
+                          "IntervalSeconds": 0,
+                          "MaxAttempts": 0
+                        },
+                        {
+                          "ErrorEquals": [ "States.ALL" ],
+                          "IntervalSeconds": 1,
+                          "MaxAttempts": 14,
+                          "BackoffRate": 2
+                        }
+                  ],
+                  "Catch" : [
+                      {
+                          "ErrorEquals" : [ "InvalidLifecycleStateException" ],
+                          "Next": "CleanupWorkflowData",
+                          "ResultPath": "$.error"
+                      }
+                  ]
+                },
+                "HandleConnectToInstanceFailure": {
+                  "Type": "Task",
+                  "Next": "CleanupWorkflowData",
+                  "Resource": "${HandleConnectToInstanceFailureActivity}",
+                  "TimeoutSeconds": 10,
+                  "Retry" : [
+                        {
+                          "ErrorEquals": [ "AbortWorkflowException", "InvalidLifecycleStateException" ],
+                          "IntervalSeconds": 0,
+                          "MaxAttempts": 0
+                        },
+                        {
+                          "ErrorEquals": [ "States.ALL" ],
+                          "IntervalSeconds": 1,
+                          "MaxAttempts": 14,
+                          "BackoffRate": 2
+                        }
+                  ],
+                  "Catch" : [
+                      {
+                          "ErrorEquals" : [ "InvalidLifecycleStateException" ],
+                          "Next": "CleanupWorkflowData",
+                          "ResultPath": "$.error"
+                      }
+                  ]
+                },
+                "CleanupWorkflowData": {
+                  "Type": "Task",
+                  "Resource": "${CleanupWorkflowDataActivity}",
+                  "TimeoutSeconds": 20,
+                  "End": true,
+                  "Retry" : [
+                        {
+                          "ErrorEquals": [ "AbortWorkflowException" ],
+                          "IntervalSeconds": 0,
+                          "MaxAttempts": 0
+                        },
+                        {
+                          "ErrorEquals": [ "FailedToUpdateException" ],
+                          "IntervalSeconds": 1,
+                          "MaxAttempts": 4,
+                          "BackoffRate": 2
+                        },
+                        {
+                          "ErrorEquals": [ "States.ALL" ],
+                          "IntervalSeconds": 1,
+                          "MaxAttempts": 14,
+                          "BackoffRate": 2
+                        }
+                  ]
+                }
+              }
+            }
+          - {
+            IdentifyEnvironmentCreationAttributesActivity: { "Ref": "IdentifyEnvironmentCreationAttributesActivity" },
+            CreateEnvironmentOwnerMembershipActivity: { "Ref": "CreateEnvironmentOwnerMembershipActivity" },
+            CreateEnvironmentKeyPairActivity: { "Ref": "CreateEnvironmentKeyPairActivity" },
+            CreateCloudFormationStackActivity: { "Ref": "CreateCloudFormationStackActivity" },
+            CommitEnvironmentTagsActivity: { "Ref": "CommitEnvironmentTagsActivity" },
+            ValidateStackActivity: { "Ref": "ValidateStackActivity" },
+            ConnectToInstanceActivity: { "Ref": "ConnectToInstanceActivity" },
+            HandleInternalFailureActivity: { "Ref": "HandleInternalFailureActivity" },
+            HandleClientCreateFailureActivity: {"Ref": HandleClientCreateFailureActivity},
+            CleanupWorkflowDataActivity: { "Ref": "CleanupWorkflowDataActivity" },
+            HandleConnectToInstanceFailureActivity: { "Ref": "HandleConnectToInstanceFailureActivity" }
+          }
+  ### Alarms
+  CreateEnvironmentEc2ExecutionsFailedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: CreateEnvironmentEc2ExecutionsFailedAlarm
+      AlarmDescription: Alarm on any failures from the CreateEnvironmentEc2 state machine
+      Namespace: AWS/States
+      MetricName: ExecutionsFailed
+      Dimensions:
+        - Name: StateMachineArn
+          Value:
+            Ref: CreateEnvironmentEc2StateMachine
+      Statistic: Sum
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 5
+      Period: '60'
+      TreatMissingData: notBreaching
+    DependsOn: CreateEnvironmentEc2StateMachine
+
+  CreateEnvironmentEc2ExecutionLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: CreateEnvironmentEc2ExecutionLatencyAlarm
+      Statistic: Maximum
+      Namespace: AWS/States
+      MetricName: ExecutionTime
+      Dimensions:
+        - Name: StateMachineArn
+          Value:
+            Ref: CreateEnvironmentEc2StateMachine
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 300000 # 5 minutes
+      AlarmDescription: Alarm on high latency from the CreateEnvironmentEc2 state machine
+      DatapointsToAlarm: 3
+      EvaluationPeriods: 10
+      Period: '60'
+      Unit: Milliseconds
+    DependsOn: CreateEnvironmentEc2StateMachine
+
+  ### Dashboard
+  DashboardWMSSFNCreateEnvironment:
+    Type: 'AWS::CloudWatch::Dashboard'
+    Properties:
+      DashboardName: WMSSFN-CreateEnvironmentEc2
+      DashboardBody:
+        Fn::Sub: >
+          {
+            "start": "-P7D",
+            "widgets": [
+              {
+                "type": "metric",
+                "x": 0,
+                "y": 0,
+                "width": 6,
+                "height": 6,
+                "properties": {
+                  "liveData": false,
+                  "metrics": [
+                    [ "AWS/States", "ExecutionsFailed", "StateMachineArn", "${CreateEnvironmentEc2StateMachine}" ]
+                  ],
+                  "view": "timeSeries",
+                  "stacked": false,
+                  "region": "${AWS::Region}",
+                  "stat": "Sum",
+                  "period": 60,
+                  "annotations": {
+                    "horizontal": [
+                      {
+                        "label": "Sev2",
+                        "value": 0
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "metric",
+                "x": 6,
+                "y": 0,
+                "width": 6,
+                "height": 6,
+                "properties": {
+                  "liveData": false,
+                  "metrics": [
+                    [ "AWS/States", "ExecutionTime", "StateMachineArn", "${CreateEnvironmentEc2StateMachine}", { "stat": "p50"} ],
+                    [ "...", { "stat": "p90"} ]
+                  ],
+                  "view": "timeSeries",
+                  "stacked": false,
+                  "title": "ExecutionTime",
+                  "region": "${AWS::Region}",
+                  "period": 60
+                }
+              }
+            ]
+          }
+

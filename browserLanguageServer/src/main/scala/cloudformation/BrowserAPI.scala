@@ -1,9 +1,9 @@
 package cloudformation
 
-import core.LazyLogging
-import core.language.Language
-import jsonRpc._
-import languageServer.MiksiloLanguageServer
+import miksilo.editorParser.LazyLogging
+import miksilo.languageServer.core.language.Language
+import miksilo.languageServer.server.MiksiloLanguageServer
+import miksilo.lspprotocol.jsonRpc.{ConsoleLogger, FromJSMessageReader, FromJSMessageWriter, JSMessageReader, JSMessageWriter, JsonRpcConnection, LSPServer}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 

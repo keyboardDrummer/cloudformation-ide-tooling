@@ -1,13 +1,13 @@
 package cloudformation
 
-import core.deltas.DeltaWithPhase
-import core.deltas.path.{FieldPath, NodeChildPath, NodePath, PathRoot}
-import core.language.Compilation
-import core.language.node.Node
-import deltas.expression.StringLiteralDelta
-import deltas.json.JsonObjectLiteralDelta.MemberKey
-import deltas.json.{JsonObjectLiteralDelta, JsonStringLiteralDelta}
-import deltas.yaml.YamlCoreDelta
+import miksilo.languageServer.core.language.Compilation
+import miksilo.modularLanguages.core.deltas.DeltaWithPhase
+import miksilo.modularLanguages.core.deltas.path.{FieldPath, NodeChildPath, NodePath}
+import miksilo.modularLanguages.core.node.Node
+import miksilo.modularLanguages.deltas.expression.StringLiteralDelta
+import miksilo.modularLanguages.deltas.json.{JsonObjectLiteralDelta, JsonStringLiteralDelta}
+import miksilo.modularLanguages.deltas.json.JsonObjectLiteralDelta.MemberKey
+import miksilo.modularLanguages.deltas.yaml.YamlCoreDelta
 
 object ConvertObjectMemberKeysToStrings extends DeltaWithPhase {
   override def transformProgram(program: Node, compilation: Compilation): Unit = {

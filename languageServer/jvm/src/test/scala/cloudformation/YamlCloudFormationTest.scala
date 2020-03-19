@@ -1,12 +1,11 @@
 package cloudformation
 
-import _root_.lsp.{DocumentSymbolParams, FileRange, HumanPosition, SymbolInformation, TextDocumentIdentifier, WorkspaceEdit}
-import core.SourceUtils
-import core.parsers.editorParsers.{Position, SourceRange, TextEdit, UntilBestAndXStepsStopFunction}
-import languageServer._
+import miksilo.editorParser.SourceUtils
+import miksilo.editorParser.parsers.editorParsers.{Position, SourceRange, TextEdit, UntilBestAndXStepsStopFunction}
+import miksilo.languageServer.server.{LanguageServerTest, MiksiloLanguageServer}
+import miksilo.lspprotocol.lsp.{DocumentSymbolParams, FileRange, HumanPosition, SymbolInformation, TextDocumentIdentifier, WorkspaceEdit}
+import miksilo.modularLanguages.util.TestLanguageBuilder
 import org.scalatest.funsuite.AnyFunSuite
-import util.TestLanguageBuilder._
-import util.TestLanguageBuilder
 
 class YamlCloudFormationTest extends AnyFunSuite with LanguageServerTest {
 
@@ -14,7 +13,7 @@ class YamlCloudFormationTest extends AnyFunSuite with LanguageServerTest {
   val yamlServer = new MiksiloLanguageServer(yamlLanguage)
 
   test("json program") {
-    val program = """{ "Protocol": "email" }"""
+    val program = """{ Protocol: email }"""
     val result = getDiagnostics(yamlServer, program)
     assert(result.isEmpty)
   }
@@ -93,5 +92,11 @@ class YamlCloudFormationTest extends AnyFunSuite with LanguageServerTest {
     val result: Seq[FileRange] = gotoDefinition(yamlServer, program, new HumanPosition(9, 24))
     val expectation = SourceRange(new HumanPosition(2, 3), new HumanPosition(2, 10))
     assertResult(expectation)(result.head.range)
+  }
+
+  test("createEnvironment parses") {
+    val program = SourceUtils.getResourceFileContents("createEnvironment.yaml")
+    val result = getDiagnostics(yamlServer, program)
+    assertResult(0)(result.size)
   }
 }

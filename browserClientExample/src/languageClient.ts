@@ -68,7 +68,7 @@ export function createLanguageClient(language: string): MonacoLanguageClient {
             errorHandler: {
                 error: () => ErrorAction.Continue,
                 closed: () => CloseAction.DoNotRestart
-            }
+            },
         },
         // create a language client connection from the JSON RPC connection on demand
         connectionProvider: {

@@ -13,11 +13,11 @@ interface LanguageConfiguration {
 }
 const languages: Array<LanguageConfiguration> = [
     {
-         vscodeName: "cloudFormation",
+         vscodeName: "CloudFormation JSON",
          miksiloName: "cloudFormation"
     },
     {
-         vscodeName: "yamlCloudFormation",
+         vscodeName: "CloudFormation YAML",
          miksiloName: "yamlCloudFormation"
     }
 ]
@@ -45,6 +45,34 @@ function createReporter(context: ExtensionContext) {
 
 	// create telemetry reporter on extension activation
 	reporter = new TelemetryReporter(extensionId, version, "4f5e6451-3d46-49f6-a295-ade5e6d47d47");
+}
+
+let previousMode: Mode | undefined = undefined;
+async function activateWithConfig(context: ExtensionContext) {
+
+	const mode = await getMode()
+	if (!mode) {
+		window.showErrorMessage("Could not locate a language server. Please configure \"miksilo.jar\" in settings.");
+		return;
+	}
+
+	if (mode?.toString() === previousMode?.toString())
+		return;
+
+	previousMode = mode;
+
+	for(const previousClient of context.subscriptions) {
+		previousClient.dispose()
+	}
+	context.subscriptions.length = 0;
+
+	// ensure it gets property disposed
+	context.subscriptions.push(reporter);
+
+	for(const language of languages) {
+		const disposable = activateLanguage(mode, language);
+		context.subscriptions.push(disposable);
+	}
 }
 
 abstract class Mode {
@@ -106,18 +134,21 @@ async function getMode(): Promise<Mode | undefined> {
         reporter.sendTelemetryEvent("javaNotFound")
     }
 
-    if (jvmData && process.env.MIKSILO) {
+    const forceNode = workspace.getConfiguration('miksilo').get("forceNode")
+    if (!forceNode && jvmData && process.env.MIKSILO) {
         return new JVMMode(jvmData, process.env.MIKSILO, "JVM language server passed in environment variable MIKSILO.");
     }
 
     if (process.env.JSMIKSILO) {
+
         return new JSMode(process.env.JSMIKSILO, "Node language server passed in environment variable JSMIKSILO.");
     }
 
 	const settingsJar: string = workspace.getConfiguration('miksilo').get("jar")
-	if (jvmData && settingsJar) {
+	if (!forceNode && jvmData && settingsJar) {
 	    return new JVMMode(jvmData, settingsJar, "Miksilo jar specified in settings.");
 	}
+
 	const jar: string = `${__dirname}/CloudFormationLanguageServer.jar`;
 	if (fs.existsSync(jar)) {
 	    return new JVMMode(jvmData, jar, `Found built-in jar.`);
@@ -130,34 +161,8 @@ async function getMode(): Promise<Mode | undefined> {
 	return undefined
 }
 
-let previousMode: Mode | undefined = undefined;
-async function activateWithConfig(context: ExtensionContext) {
-
-	const mode = await getMode()
-	if (mode === previousMode)
-		return;
-	previousMode = mode;
-	if (!mode) {
-		window.showErrorMessage("Could not locate a language server. Please configure \"miksilo.jar\" in settings.");
-		return;
-	} 
-
-	for(const previousClient of context.subscriptions) {
-		previousClient.dispose()
-	}
-	context.subscriptions.length = 0;
-
-	// ensure it gets property disposed
-	context.subscriptions.push(reporter);
-
-	for(const language of languages) {
-		const disposable = activateLanguage(mode, language);
-		context.subscriptions.push(disposable);
-	}
-}
 
 function activateLanguage(mode: Mode, language: LanguageConfiguration): Disposable {
-
 	let serverOptions: ServerOptions = prepareExecutable(mode, language)
 	
 	let clientOptions: LanguageClientOptions = {
@@ -170,7 +175,7 @@ function activateLanguage(mode: Mode, language: LanguageConfiguration): Disposab
 	const start = Date.now()
 	const languageClient = new LanguageClient(
 		'miksilo' + language.vscodeName, 
-		language.vscodeName + " Miksilo", 
+		language.vscodeName,
 		serverOptions, clientOptions);
 
 	const info = (message: String) => {
