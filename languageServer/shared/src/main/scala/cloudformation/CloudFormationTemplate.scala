@@ -1,6 +1,7 @@
 package cloudformation
 
 import miksilo.editorParser.LazyLogging
+import miksilo.editorParser.languages.json.JsonValue
 import miksilo.languageServer.core.language.Language
 import miksilo.languageServer.core.smarts.ConstraintBuilder
 import miksilo.languageServer.core.smarts.scopes.objects.ConcreteScope
@@ -31,59 +32,46 @@ class CloudFormationTemplate(resourceSpecificationOption: Option[String]) extend
       val rootScope = builder.newScope(debugName = "rootScope")
 
       addResourceTypesFromSchema(resourceTypes, builder, rootScope)
-
       addPseudoParameters(builder, rootScope)
-      val root = compilation.program.asInstanceOf[PathRoot]
-      if (root.shape == JsonObjectLiteralDelta.Shape) {
-        val program: ObjectLiteral[NodePath] = root
+      val root = compilation.program.asInstanceOf[NodePath]
 
+      JsonObjectLiteralDelta.Shape.from(root).foreach(program => {
         addParameters(builder, rootScope, program)
         handleResources(builder, rootScope, program)
         resolveRefs(builder, rootScope, program)
-      }
+      })
     })
   }
 
   private def handleResources(builder: ConstraintBuilder, rootScope: ConcreteScope, program: ObjectLiteral[NodePath]): Unit = {
-    val resources: Option[ObjectLiteral[NodePath]] = program.get("Resources").
-      filter(v => v.shape == JsonObjectLiteralDelta.Shape).map(v => ObjectLiteral(v))
-    val members = resources.fold(Seq.empty[ObjectLiteralMember[NodePath]])(o => o.members)
+    val resources = program.get("Resources").flatMap(JsonObjectLiteralDelta.Shape.from)
+    val members = resources.toSeq.flatMap(_.members)
     for (resource <- members) {
       builder.declare(resource.key, rootScope, resource.node.getField(MemberKey), Some(valueType))
 
-      if (resource.value.shape == JsonObjectLiteralDelta.Shape) {
-        val resourceMembers: ObjectLiteral[NodePath] = resource.value
-        val typeOption = resourceMembers.get("Type")
-        typeOption match {
-          case Some(typeString) =>
-            val resourceType = JsonStringLiteralDelta.getValue(typeString)
-            val typeDeclaration = builder.resolve(resourceType, rootScope, typeString.getField(JsonStringLiteralDelta.Value))
-            val typeScope = builder.getDeclaredScope(typeDeclaration)
-            resourceMembers.get("Properties").foreach(_properties => {
-              if (_properties.shape == JsonObjectLiteralDelta.Shape) {
-                val properties: ObjectLiteral[NodePath] = _properties
-                for (property <- properties.members) {
-                  if (property.key.nonEmpty)
-                    builder.resolveToType(property.key, property.node.getField(MemberKey), typeScope, propertyType)
-                }
-              }
-            })
-          case None =>
-            // TODO add error for missing type.
-        }
-      }
+      JsonObjectLiteralDelta.Shape.from(resource.value).foreach(resourceMembers => {
+        resourceMembers.get("Type").flatMap(StringLiteralDelta.Shape.from).foreach(typeString => {
+          val resourceType = typeString.value
+          val typeDeclaration = builder.resolve(resourceType, rootScope, typeString.getField(JsonStringLiteralDelta.Value))
+          val typeScope = builder.getDeclaredScope(typeDeclaration)
+          resourceMembers.get("Properties").flatMap(JsonObjectLiteralDelta.Shape.from).foreach(properties => {
+            for (property <- properties.members) {
+              if (property.key.nonEmpty)
+                builder.resolveToType(property.key, property.node.getField(MemberKey), typeScope, propertyType)
+            }
+          })
+        })
+      })
 
     }
   }
 
   private def resolveRefs(builder: ConstraintBuilder, rootScope: ConcreteScope, program: ObjectLiteral[NodePath]): Unit = {
-    program.visitShape(MemberShape, (_member: NodePath) => {
-      val member: JsonObjectLiteralDelta.ObjectLiteralMember[NodePath] = _member
-      if (member.key == "Ref" && member.value.shape == StringLiteralDelta.Shape) {
-        val value = JsonStringLiteralDelta.getValue(member.value)
+    MemberShape.visit(program.node)(member => {
+      StringLiteralDelta.Shape.from(member.value).filter(_ => member.key == "Ref").foreach(stringNode => {
         val refLocation = member.value.getField(JsonStringLiteralDelta.Value)
-        builder.resolveToType(value, refLocation, rootScope, valueType)
-      }
+        builder.resolveToType(stringNode.value, refLocation, rootScope, valueType)
+      })
     })
   }
 
@@ -95,14 +83,11 @@ class CloudFormationTemplate(resourceSpecificationOption: Option[String]) extend
 
   private def addParameters(builder: ConstraintBuilder, rootScope: ConcreteScope,
                             program: ObjectLiteral[NodePath]): Unit = {
-    program.getObject("Parameters") match {
-      case Some(_parameters) =>
-        val parameters: ObjectLiteral[NodePath] = _parameters
-        for (parameter <- parameters.members) {
-          builder.declare(parameter.key, rootScope, parameter.node.getField(MemberKey), Some(valueType))
-        }
-      case _ =>
-    }
+    program.getObject("Parameters").foreach(parameters => {
+      for (parameter <- parameters.members) {
+        builder.declare(parameter.key, rootScope, parameter.node.getField(MemberKey), Some(valueType))
+      }
+    })
   }
 
   private def addResourceTypesFromSchema(resourceTypes: Obj, builder: ConstraintBuilder, universe: ConcreteScope): Unit = {
@@ -120,3 +105,5 @@ class CloudFormationTemplate(resourceSpecificationOption: Option[String]) extend
 
   override def dependencies: Set[Contract] = Set.empty
 }
+
+
