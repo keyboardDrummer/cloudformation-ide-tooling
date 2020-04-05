@@ -1,7 +1,7 @@
 'use strict';
 
 import { workspace, ExtensionContext, window, Disposable } from 'vscode';
-import { TransportKind, LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient';
+import { TransportKind, LanguageClient, LanguageClientOptions, ServerOptions, ErrorAction, CloseAction } from 'vscode-languageclient';
 import * as path from 'path'
 import * as fs from 'fs'
 import TelemetryReporter from 'vscode-extension-telemetry';
@@ -161,7 +161,6 @@ async function getMode(): Promise<Mode | undefined> {
 	return undefined
 }
 
-
 function activateLanguage(mode: Mode, language: LanguageConfiguration): Disposable {
 	let serverOptions: ServerOptions = prepareExecutable(mode, language)
 	
@@ -169,6 +168,15 @@ function activateLanguage(mode: Mode, language: LanguageConfiguration): Disposab
 		documentSelector: [{scheme: 'file', language: language.vscodeName}],
 		synchronize: {
 			configurationSection: 'miksilo',
+		},
+		errorHandler:  {
+			error(error: Error) {
+				reporter.sendTelemetryException(error)
+				return ErrorAction.Shutdown
+			},
+			closed() { 
+				return CloseAction.Restart 
+			}
 		}
 	}
 	

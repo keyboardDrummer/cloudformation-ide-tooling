@@ -16,8 +16,8 @@ object ConvertObjectMemberKeysToStrings extends DeltaWithPhase {
       path(MemberKey) match {
         case key: NodeChildPath =>
           key.current.shape match {
-            case StringLiteralDelta.Shape => key.replaceWith(key.current(JsonStringLiteralDelta.Value))
-            case YamlCoreDelta.TaggedNode => key.replaceWith(key.current(YamlCoreDelta.TagNode).asInstanceOf[Node](JsonStringLiteralDelta.Value))
+            case StringLiteralDelta.Shape => key.replaceWith(key.current(StringLiteralDelta.Value))
+            case YamlCoreDelta.TaggedNode => key.replaceWith(key.current(YamlCoreDelta.TagNode).asInstanceOf[Node](StringLiteralDelta.Value))
             case _ =>
               throw new Exception("Only string literals allowed")
           }

@@ -52,7 +52,7 @@ class CloudFormationTemplate(resourceSpecificationOption: Option[String]) extend
       JsonObjectLiteralDelta.Shape.from(resource.value).foreach(resourceMembers => {
         resourceMembers.get("Type").flatMap(StringLiteralDelta.Shape.from).foreach(typeString => {
           val resourceType = typeString.value
-          val typeDeclaration = builder.resolve(resourceType, rootScope, typeString.getField(JsonStringLiteralDelta.Value))
+          val typeDeclaration = builder.resolve(resourceType, rootScope, typeString.getField(StringLiteralDelta.Value))
           val typeScope = builder.getDeclaredScope(typeDeclaration)
           resourceMembers.get("Properties").flatMap(JsonObjectLiteralDelta.Shape.from).foreach(properties => {
             for (property <- properties.members) {
@@ -69,7 +69,7 @@ class CloudFormationTemplate(resourceSpecificationOption: Option[String]) extend
   private def resolveRefs(builder: ConstraintBuilder, rootScope: ConcreteScope, program: ObjectLiteral[NodePath]): Unit = {
     MemberShape.visit(program.node)(member => {
       StringLiteralDelta.Shape.from(member.value).filter(_ => member.key == "Ref").foreach(stringNode => {
-        val refLocation = member.value.getField(JsonStringLiteralDelta.Value)
+        val refLocation = member.value.getField(StringLiteralDelta.Value)
         builder.resolveToType(stringNode.value, refLocation, rootScope, valueType)
       })
     })
