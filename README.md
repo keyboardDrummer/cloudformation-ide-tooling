@@ -1,6 +1,10 @@
 CloudFormation IDE Tooling [![Build Status](https://travis-ci.org/keyboardDrummer/cloudformation-ide-tooling.svg?branch=master)](https://travis-ci.org/keyboardDrummer/Miksilo)
 ==========
 
+#### DEMO
+Try out the CloudFormation IDE in the browser [here](https://keyboarddrummer.github.io/cloudformation-ide-tooling/)
+
+#### Repository structure
 This project contains multiple sub-projects that provide rich editor tooling for [CloudFormation Templates](https://aws.amazon.com/cloudformation/resources/templates/) (CFT) for different editors. It contains the following sub-projects:
 - [languageServer](languageServer): A CloudFormation Template LSP server that runs on Node and on the JVM.
 - [vscode-extension](vscode-extension): A VS Code extension that provides rich editor tooling for CloudFormation Templates by using the Node or JVM CloudFormation Template LSP servers from the languageServer project.
