@@ -39,7 +39,8 @@
 					"CloudFormation JSON"
 				],
 				"extensions": [
-					".cf.json"
+					".cf.json",
+					".cfn.json"
 				],
 				"configuration": "./src/cloudFormation/json-language-configuration.json"
 			},
@@ -49,7 +50,8 @@
 					"CloudFormation YAML"
 				],
 				"extensions": [
-					".cf.yaml"
+					".cf.yaml",
+					".cfn.yaml",
 				],
 				"configuration": "./src/cloudFormation/yaml-language-configuration.json"
 			}
