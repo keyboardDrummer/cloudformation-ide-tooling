@@ -4,7 +4,7 @@
 	"description": "Rich language support for AWS CloudFormation Templates",
 	"publisher": "keyboardDrummer",
 	"license": "MIT",
-	"version": "0.0.19",
+	"version": "0.0.20",
 	"keywords": [
 		"cloudformation",
 		"yaml",
@@ -51,7 +51,7 @@
 				],
 				"extensions": [
 					".cf.yaml",
-					".cfn.yaml",
+					".cfn.yaml"
 				],
 				"configuration": "./src/cloudFormation/yaml-language-configuration.json"
 			}

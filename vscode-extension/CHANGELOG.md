@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.0.20
+- Update the CloudFormation resource specification to the latest version to include new constructs.
+
 ## 0.0.17
 - Fix bugs in the YAML parser
 
