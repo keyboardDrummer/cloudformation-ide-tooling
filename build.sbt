@@ -1,3 +1,5 @@
+import java.nio.file.{Files, Paths, StandardCopyOption}
+
 import sbt.Keys.{homepage, scmInfo}
 
 import scala.sys.process._
@@ -65,8 +67,10 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
 
     vscodeprepublish := {
       val assemblyFile: String = assembly.value.getAbsolutePath
-      val copyJar = Process(Seq("cp", assemblyFile, s"./vscode-extension/out/CloudFormationLanguageServer.jar"))
-      copyJar.run
+      val extensionPath = Paths.get(".", "vscode-extension")
+      val outPath = extensionPath.resolve("out")
+      Files.copy(Paths.get(assemblyFile),
+        outPath.resolve("CloudFormationLanguageServer.jar"), StandardCopyOption.REPLACE_EXISTING)
     },
 
     fullvscode := {
@@ -83,10 +87,14 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
     },
 
     vscodeprepublish := {
+      val extensionPath = Paths.get(".", "vscode-extension")
+      val outPath = extensionPath.resolve("out")
       val assemblyFile: String = (fullOptJS in Compile).value.data.getAbsolutePath
-      val copyJar = Process(Seq("cp", assemblyFile, s"./vscode-extension/out/CloudFormationLanguageServer.js"))
-      val copySpec = Process(Seq("cp", "./CloudFormationResourceSpecification.json", "./vscode-extension/out/"))
-      copyJar.#&&(copySpec).run
+      Files.copy(Paths.get(assemblyFile),
+        outPath.resolve("CloudFormationLanguageServer.js"), StandardCopyOption.REPLACE_EXISTING)
+      val resourceSpecificationFile = Paths.get(".", "CloudFormationResourceSpecification.json")
+      Files.copy(resourceSpecificationFile,
+        outPath.resolve(resourceSpecificationFile.getFileName), StandardCopyOption.REPLACE_EXISTING)
     },
 
     fullvscode := {
