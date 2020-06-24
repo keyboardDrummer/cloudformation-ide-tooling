@@ -79,7 +79,6 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
   ).
   jsSettings(
     scalaJSUseMainModuleInitializer := true,
-    scalaJSModuleKind := ModuleKind.CommonJSModule,
 
     fastvscode := {
       val assemblyFile: String = (fastOptJS in Compile).value.data.getAbsolutePath
@@ -109,7 +108,7 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
     libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.8.0",
 
     // https://mvnrepository.com/artifact/com.github.keyboardDrummer/modularlanguages
-    libraryDependencies += "com.github.keyboardDrummer" %%% "modularlanguages" % "0.1.7"
+    libraryDependencies += "com.github.keyboardDrummer" %%% "modularlanguages" % "0.1.8"
   )
 
 lazy val fastvscode = taskKey[Unit]("Run VS Code Fast")
@@ -139,7 +138,6 @@ lazy val browserLanguageServer = project.
     name := "browserLanguageServer",
 
     scalaJSUseMainModuleInitializer := false,
-    scalaJSModuleKind := ModuleKind.CommonJSModule,
     // https://mvnrepository.com/artifact/com.typesafe.play/play-json
     libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.8.0",
   ).dependsOn(languageServer.js)
