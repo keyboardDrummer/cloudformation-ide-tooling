@@ -2,7 +2,7 @@ CloudFormation IDE Tooling [![Build Status](https://travis-ci.org/keyboardDrumme
 ==========
 
 #### DEMO
-Try out the CloudFormation IDE in the browser [here](https://keyboarddrummer.github.io/cloudformation-ide-tooling/)
+Try out the CloudFormation IDE in the browser [here](https://keyboarddrummer.github.io/cloudformation-ide-tooling/).
 
 #### Repository structure
 This project contains multiple sub-projects that provide rich editor tooling for [CloudFormation Templates](https://aws.amazon.com/cloudformation/resources/templates/) (CFT) for different editors. It contains the following sub-projects:
