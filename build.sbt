@@ -79,6 +79,7 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
   ).
   jsSettings(
     scalaJSUseMainModuleInitializer := true,
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
 
     fastvscode := {
       val assemblyFile: String = (fastOptJS in Compile).value.data.getAbsolutePath
