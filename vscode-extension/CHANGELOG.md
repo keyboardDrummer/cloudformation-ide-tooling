@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.0.21
+- Improve parse speed. Files over 50k lines are now supported.
+
 ## 0.0.20
 - Update the CloudFormation resource specification to the latest version to include new constructs.
 

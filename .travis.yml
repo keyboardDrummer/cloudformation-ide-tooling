@@ -2,6 +2,8 @@ language: scala
 jdk:
   - oraclejdk12
 scala:
-   - 2.13.1
+  - 2.13.1
 env:
   PLATFORM=travis
+before_install:
+  - nvm install 10
