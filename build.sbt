@@ -41,12 +41,26 @@ lazy val assemblySettings = Seq(
 )
 
 def languageServerCommonTask(assemblyFile: String) = {
+  val extensionPath = Paths.get(".", "vscode-extension")
+  val outPath = extensionPath.resolve("out")
+  outPath.toFile.mkdir()
+  outPath.resolve("CloudFormationLanguageServer.jar").toFile.delete()
   val extension = assemblyFile.split("\\.").last
-  val removePrevious = Process(Seq("rm", "-f", "./vscode-extension/out/CloudFormationLanguageServer.jar"))
-  val copyJar = Process(Seq("cp", assemblyFile, s"./vscode-extension/out/CloudFormationLanguageServer.${extension}"))
-  val copySpec = Process(Seq("cp", "./CloudFormationResourceSpecification.json", "./vscode-extension/out/"))
-  val yarn = Process(Seq("yarn", "compile"), file("./vscode-extension"))
-  removePrevious.#&&(copyJar).#&&(copySpec).#&&(yarn)
+  Files.copy(Paths.get(assemblyFile),
+    outPath.resolve(s"CloudFormationLanguageServer.$extension"), StandardCopyOption.REPLACE_EXISTING)
+  val cfnSpecification = Paths.get(".", "CloudFormationResourceSpecification.json")
+  Files.copy(cfnSpecification,
+    outPath.resolve("CloudFormationResourceSpecification.json"), StandardCopyOption.REPLACE_EXISTING)
+  val yarn = Process(enableForWindows(Seq("yarn", "compile")), file("./vscode-extension"))
+  yarn
+}
+
+def enableForWindows(parts: Seq[String]): Seq[String] = {
+  val os = sys.props("os.name").toLowerCase
+  os match {
+    case x if x contains "windows" => Seq("cmd", "/C") ++ parts
+    case _ => parts
+  }
 }
 
 def vscodeCommonTask(assemblyFile: String) = {
