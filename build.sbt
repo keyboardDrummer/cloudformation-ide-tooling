@@ -93,7 +93,7 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
   ).
   jsSettings(
     scalaJSUseMainModuleInitializer := true,
-    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
 
     fastvscode := {
       val assemblyFile: String = (fastOptJS in Compile).value.data.getAbsolutePath
@@ -140,7 +140,7 @@ lazy val browserLanguageServer = project.
   enablePlugins(ScalaJSPlugin).
   settings(commonSettings: _*).
   settings(
-    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
 
     fastbrowser := {
       val assemblyFile: String = (fastOptJS in Compile).value.data.getAbsolutePath
