@@ -27,7 +27,7 @@ lazy val commonSettings = Seq(
   scalacOptions += "-language:implicitConversions",
   scalacOptions += "-language:postfixOps",
 
-  libraryDependencies += "org.scalatest" %%% "scalatest" % "3.1.0" % "test"
+  libraryDependencies += "org.scalatest" %%% "scalatest" % "3.1.1" % "test"
 )
 
 lazy val assemblySettings = Seq(
@@ -93,7 +93,7 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
   ).
   jsSettings(
     scalaJSUseMainModuleInitializer := true,
-    scalaJSModuleKind := ModuleKind.CommonJSModule,
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
 
     fastvscode := {
       val assemblyFile: String = (fastOptJS in Compile).value.data.getAbsolutePath
@@ -120,10 +120,10 @@ lazy val languageServer = crossProject(JVMPlatform, JSPlatform).
 
     mainClass in Compile := Some("cloudformation.Program"),
     // https://mvnrepository.com/artifact/com.typesafe.play/play-json
-    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.8.0",
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "1.1.0",
 
     // https://mvnrepository.com/artifact/com.github.keyboardDrummer/modularlanguages
-    libraryDependencies += "com.github.keyboardDrummer" %%% "modularlanguages" % "0.1.4"
+    libraryDependencies += "com.github.keyboardDrummer" %%% "modularlanguages" % "0.1.8"
   )
 
 lazy val fastvscode = taskKey[Unit]("Run VS Code Fast")
@@ -140,6 +140,8 @@ lazy val browserLanguageServer = project.
   enablePlugins(ScalaJSPlugin).
   settings(commonSettings: _*).
   settings(
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
+
     fastbrowser := {
       val assemblyFile: String = (fastOptJS in Compile).value.data.getAbsolutePath
       browserLanguageServerCommonTask(assemblyFile).run
@@ -153,9 +155,8 @@ lazy val browserLanguageServer = project.
     name := "browserLanguageServer",
 
     scalaJSUseMainModuleInitializer := false,
-    scalaJSModuleKind := ModuleKind.CommonJSModule,
     // https://mvnrepository.com/artifact/com.typesafe.play/play-json
-    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.8.0",
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "1.1.0",
   ).dependsOn(languageServer.js)
 
 lazy val fastbrowser = taskKey[Unit]("Run Browser Example Fast")

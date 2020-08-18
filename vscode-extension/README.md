@@ -3,7 +3,7 @@ This extension adds rich language support for AWS CloudFormation Templates to Vi
 
 ## Quick Start
 1. Install the extension
-2. Open any `.cf.json` or `.cf.yaml` file in VS Code.
+2. Open any `.cfn.json` or `.cfn.yaml` file in VS Code.
 3. Enjoy rich language tooling
 
 ## Language features
@@ -23,7 +23,7 @@ These features work even when there are syntactic or semantic errors in your fil
 The best way to contribute to this extensions is to use it and file issues on the GitHub repository. Thank you! Also please rate the extension and leave honest feedback, I'll be sure to read it.
 
 ## Architecture
-This extension provides rich language support using a [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) server provided by [this project](../languageServer). It connects to that LSP server using [vscode-languageclient](https://www.npmjs.com/package/vscode-languageclient).
+This extension provides rich language support using a [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) server provided by [this project](https://github.com/keyboardDrummer/cloudformation-ide-tooling/tree/master/languageServer). It connects to that LSP server using [vscode-languageclient](https://www.npmjs.com/package/vscode-languageclient).
 
 ## Faster performance
 This extension runs faster when Java is installed. It looks for the Java home directory in these locations:
