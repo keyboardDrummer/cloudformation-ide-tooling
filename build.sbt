@@ -1,11 +1,7 @@
 import java.nio.file.{Files, Paths, StandardCopyOption}
 
-import sbt.Keys.{homepage, scmInfo}
-
 import scala.sys.process._
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
-
-import scala.reflect.io.File
 
 lazy val cloudformation = project
   .in(file("."))
@@ -155,7 +151,7 @@ lazy val browserLanguageServer = project.
     scalaJSUseMainModuleInitializer := false,
     scalaJSModuleKind := ModuleKind.CommonJSModule,
     // https://mvnrepository.com/artifact/com.typesafe.play/play-json
-    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.8.0",
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.8.0"
   ).dependsOn(languageServer.js)
 
 lazy val fastbrowser = taskKey[Unit]("Run Browser Example Fast")
